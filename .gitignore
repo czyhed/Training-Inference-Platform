@@ -1,0 +1,63 @@
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated frontend output
+node_modules/
+.next/
+.next-*/
+out/
+tsconfig.tsbuildinfo
+
+# Python caches and local test/runtime state
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local training, uploads, artifacts, model caches, databases and logs
+backend/runtime/
+runtime/
+training-work/
+artifacts/
+uploads/
+model-cache/
+datasets/
+.output-tmp/
+image-generation-results/
+.image-generation-results/
+.local-runtime/
+.runtime-local/
+output/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+unsloth_compiled_cache/
+artifacts-sdxl-download.tmp
+
+# Codex/IDE and OS-local files
+.codex/
+.zcode/
+.scratch/
+docs/learning-guide/
+.DS_Store
+Thumbs.db
+
+# Agent working directories (local notes, issue drafts, openspec sessions)
+.scratch/
+.agents/
+openspec/
+
+!.env.production.example
+deploy-data/
+
+# Codex 远程 vLLM 镜像构建临时上下文包
+cppt-vllm-build-context.tar.gz
+
+# 本地数据集、证书与私有凭据，永远不进入公开仓库
+data/
+tls/
+.secrets/
