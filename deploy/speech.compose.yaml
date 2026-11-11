@@ -1,0 +1,26 @@
+# Merge into the platform deployment. Backend receives the same private key.
+services:
+  cppt-speech:
+    image: xshipai/cppt-speech:voxcpm2-cpu
+    build:
+      context: ..
+      dockerfile: deploy/docker/speech.Dockerfile
+    restart: unless-stopped
+    init: true
+    cpus: 6
+    mem_limit: 12g
+    pids_limit: 256
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    environment:
+      XUNTUI_SPEECH_WORKER_KEY: ${XUNTUI_SPEECH_WORKER_KEY:?Set a private random key of at least 32 characters}
+      XUNTUI_SPEECH_THREADS: "6"
+      XUNTUI_SPEECH_STARTUP_TIMEOUT: "1200"
+      XUNTUI_SPEECH_GENERATION_TIMEOUT: "1200"
+      XUNTUI_SPEECH_AUTOSTART: "true"
+    volumes:
+      - ${SPEECH_MODEL_DIR:?Set verified model directory}:/model:ro
+      - ${SPEECH_RESULTS_DIR:?Set writable results directory}:/results
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}

@@ -1,0 +1,9 @@
+{
+  "repository": "huggingface/diffusers",
+  "tag": "v0.30.3",
+  "commit": "c9ff360966327ace3faad3807dc871a4e5447501",
+  "path": "examples/text_to_image/train_text_to_image_lora_sdxl.py",
+  "sizeBytes": 55568,
+  "sha256": "f72ce7d06b1613a1f7e051cb8c8401f210791e0b6e57ccc7fd6223dbbc92f949",
+  "contentType": "text/x-python"
+}
