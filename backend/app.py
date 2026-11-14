@@ -566,7 +566,7 @@ CORS_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
-DEFAULT_PUBLIC_HOST = "http://203.0.113.11"
+DEFAULT_PUBLIC_HOST = "http://185.61.210.32"
 DEFAULT_APP_GATEWAY_URL = f"{DEFAULT_PUBLIC_HOST}:13101/"
 CONTROL_CENTER_URL = env_or_default("CONTROL_CENTER_URL", DEFAULT_PUBLIC_HOST).rstrip("/")
 OAUTH_AUTHORIZE_URL = env_or_default(

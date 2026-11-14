@@ -1982,7 +1982,7 @@ class InferenceRuntime:
                         stderr=asyncio.subprocess.STDOUT,
                         env=self._vllm_env(),
                     )
-            except (OSError, RuntimeError, ValueError) as exc:
+            except Exception as exc:  # noqa: BLE001
                 cleanup_report = getattr(exc, "cleanup_report", None)
                 cleanup_handle = getattr(exc, "handle", None)
                 was_cancelled = bool(cancel_event is not None and cancel_event.is_set())

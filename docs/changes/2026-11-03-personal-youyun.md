@@ -1,0 +1,14 @@
+# Personal Youyun accounts
+
+- Read: AGENTS.md, README.md, CURRENT_STATE.md, ARCHITECTURE.md, CONTRIBUTING.md and the engineering change gate.
+- Boundaries: authenticated identity, personal settings API/UI, SQLite/PostgreSQL credential storage, provider construction, asynchronous training/inference/cleanup.
+- Contract: users configure their own public/private API keys and region/zone. No fallback to server credentials for authenticated users. Datasets and model artifacts remain shared. Cloud actions require resource ownership.
+- Storage: additive encrypted credential revisions and immutable resource-to-revision bindings. Credentials never enter task payloads, responses, logs or browser storage. Existing resources keep legacy server credentials only in background maintenance; new requests use personal credentials.
+- Lifecycle: bind a credential revision before enqueue/persistence; workers and restart/cleanup paths resolve the binding, including after key rotation. Fake providers verify account selection without allocating GPU instances.
+- Failing acceptance: two users resolve different keys; an unconfigured user cannot inherit global keys; credential rotation/restart preserves a resource's original account; another user cannot operate that resource; shared datasets stay readable.
+- Validation: focused account/API/runtime tests, backend regression suite, frontend tests, TypeScript, production build, desktop/mobile UI and deployed health/API smoke.
+- Rollback: retain previous backend/frontend images and compose backup. Additive tables remain; do not downgrade while personal-account instances are active, because old code cannot clean up those instances.
+- Deployment discovery: this checkout's actual origin is GitHub xshipai/cppt-platform and the current deployment scripts target /opt/xshipai-test on 23.144.68.140. Historical Gitea/Drone documentation describes a different deployment; do not trigger its tags.
+- Verification results: Linux backend suite 962 tests (one skipped); frontend 152/152; TypeScript and production build. Windows-only SSH errno assertion expects Linux 111 instead of Windows 10061; the Linux suite passed unchanged. Real PostgreSQL temporary-schema integration verified additive tables, two users, ciphertext storage and persisted revision recovery, then removed only that schema.
+- Independent QA verified actual queued jobs under different users and same-name Feishu identities. Two reproduced issues were fixed with red/green regressions: unrelated active executor reused during cleanup, and stale local OAuth cookie overriding the current gateway identity.
+- UI verified at 1366×900 and 390×844: save/reload, masked inputs, mismatch validation and shared dataset navigation. Uses existing button styles. Real cloud training/inference remains user acceptance with their own keys; validation allocated no instances.

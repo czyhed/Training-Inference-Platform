@@ -1,0 +1,89 @@
+{
+  "dataset_id": "vision_understanding_eval",
+  "version": "v1",
+  "state": "ready",
+  "purpose": "独立视觉理解最终评测",
+  "frozen": false,
+  "source": {
+    "names": [
+      "TextVQA validation"
+    ],
+    "licenses": [
+      "CC BY 4.0"
+    ],
+    "source_urls": [
+      "https://c1.staticflickr.com/8/7026/6455088135_61080cdf7f_z.jpg",
+      "https://c2.staticflickr.com/3/2133/2402816232_65b47060a6_z.jpg",
+      "https://c2.staticflickr.com/3/2373/2303093432_3512990397_z.jpg",
+      "https://c2.staticflickr.com/3/2727/4339495660_4fefbdc234_z.jpg?zz=1",
+      "https://c3.staticflickr.com/3/2668/3908957099_71f3a1d170_z.jpg",
+      "https://c3.staticflickr.com/8/7168/6789434165_e61371ba76_z.jpg",
+      "https://c3.staticflickr.com/8/7721/17182410539_3d954e1492_z.jpg",
+      "https://c4.staticflickr.com/3/2540/3830661063_a2839f64dc_z.jpg",
+      "https://c4.staticflickr.com/3/2772/4446629158_8371fb4774_z.jpg?zz=1",
+      "https://c4.staticflickr.com/3/2875/11244913503_ff8d964446_z.jpg",
+      "https://c4.staticflickr.com/6/5020/5419630082_f47f93a6ef_z.jpg",
+      "https://c4.staticflickr.com/6/5052/5432404336_c0448df874_z.jpg",
+      "https://c4.staticflickr.com/7/6028/5958481850_2a91ed3963_z.jpg",
+      "https://c4.staticflickr.com/8/7036/6912246319_8f001f8705_z.jpg",
+      "https://c4.staticflickr.com/8/7470/15496926090_9292d9aa41_z.jpg",
+      "https://c4.staticflickr.com/8/7581/15746368202_8a7de7a2fd_z.jpg",
+      "https://c5.staticflickr.com/5/4004/4370684753_33f9166296_z.jpg",
+      "https://c6.staticflickr.com/4/3875/14713851228_abcc5d2191_z.jpg",
+      "https://c6.staticflickr.com/7/6074/6043475754_11bdfd5d59_z.jpg",
+      "https://c6.staticflickr.com/9/8103/8660276638_d599f42f01_z.jpg",
+      "https://c7.staticflickr.com/4/3141/2784161282_c56df49f8c_z.jpg",
+      "https://c7.staticflickr.com/7/6076/6119200519_893fd6fe98_z.jpg",
+      "https://c7.staticflickr.com/8/7140/7811525122_5c31f0ca2c_z.jpg",
+      "https://c8.staticflickr.com/1/46/166654804_ac54ae3921_z.jpg?zz=1",
+      "https://c8.staticflickr.com/3/2630/3767123531_c520de6ac5_z.jpg",
+      "https://c8.staticflickr.com/4/3017/2810538931_188b839720_z.jpg",
+      "https://c8.staticflickr.com/4/3360/3208136601_51cef1776a_z.jpg",
+      "https://c8.staticflickr.com/4/3490/3940401264_e4729d2545_z.jpg",
+      "https://c8.staticflickr.com/6/5636/21367603321_d79144d362_z.jpg",
+      "https://c8.staticflickr.com/8/7242/7358085780_e6bd75ee04_z.jpg"
+    ]
+  },
+  "policy": {
+    "used_for_training": false,
+    "used_for_validation": false,
+    "used_for_hyperparameter_selection": false,
+    "used_for_final_evaluation": true
+  },
+  "split_policy": {
+    "strategy": "independent_golden_set",
+    "group_field": "group_id",
+    "stratify_fields": [
+      "task_type",
+      "domain",
+      "difficulty"
+    ],
+    "seed": null
+  },
+  "counts": {
+    "samples": 30,
+    "images": 30,
+    "groups": 30,
+    "reviewed_samples": 30,
+    "task_types": {
+      "ocr": 30
+    },
+    "domains": {
+      "自然场景文字": 30
+    },
+    "difficulties": {
+      "medium": 30
+    }
+  },
+  "quality": {
+    "errors": 0,
+    "warnings": 0,
+    "unreviewed_samples": 0
+  },
+  "files": {
+    "metadata": "metadata.jsonl",
+    "images_root": "images/",
+    "metadata_sha256": "80d980baa8202dff604039773c0368aa3d0aa2481c4e51b444f7ddf403e35917",
+    "dataset_sha256": "68e9411287f4a379a554a8b011686dc0d9c27d67a23d50db314cb92be9ee4a5b"
+  }
+}

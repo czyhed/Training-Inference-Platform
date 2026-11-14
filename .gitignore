@@ -56,8 +56,3 @@ deploy-data/
 
 # Codex 远程 vLLM 镜像构建临时上下文包
 cppt-vllm-build-context.tar.gz
-
-# 本地数据集、证书与私有凭据，永远不进入公开仓库
-data/
-tls/
-.secrets/

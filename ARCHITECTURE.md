@@ -2,7 +2,7 @@
 
 ## Snapshot
 
-This document describes the current code structure and the runtime capability boundary exposed by `GET /api/capabilities`.
+The published baseline is `v3.0.130` at commit `97b7b14` (2026-09-13), which matches `origin/master`. The production capability boundary below is the next unreleased change.
 
 ## Production capability boundary
 

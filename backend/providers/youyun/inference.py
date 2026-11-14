@@ -978,7 +978,6 @@ class YouyunInferenceProvider:
                 memory_gb=resource.get("memoryGb"),
                 gpu_type=resource.get("gpuType"),
                 image_id=resource.get("imageId"),
-                allow_resource_fallback=resource.get("mode") == "auto",
                 instance_mode=resource.get("instanceMode"),
                 zone=resource.get("zone"),
             )

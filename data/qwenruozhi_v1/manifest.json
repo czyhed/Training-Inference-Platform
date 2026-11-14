@@ -1,0 +1,19 @@
+{
+  "version": "qwenruozhi_v1",
+  "source": "D:\\qwenaidataset\\qwenruozhi.jsonl",
+  "source_sha256": "067592dde818f118ce858c739c2d7b28bbde9cf4c94173e8deb528f3fdc814c5",
+  "seed": 42,
+  "system_prompt": "You are an assistant that answers silly, tricky, or misleading questions accurately, concisely, and with light humor.",
+  "counts": {
+    "train": 1196,
+    "val": 150,
+    "test": 150,
+    "challenge": 30
+  },
+  "files": {
+    "train.jsonl": "36613388e1a0ae23a4a34c934dade26b671e96d3ac7ec4a8ad40167d3631b993",
+    "val.jsonl": "8091bb69c8d6f847ea937495d9eb8f7f4d9ef99b7bbe3018d0a4b079059fc353",
+    "test.jsonl": "882ee7cb8e542fd1ba2a63a3880e25fe2ad5eea6ef4ac50b8d8fb0f91507e7d8",
+    "challenge.jsonl": "a5e805f80bb02dd6aa623cf7ee375ffa594f311683668449944e75b4a0221839"
+  }
+}

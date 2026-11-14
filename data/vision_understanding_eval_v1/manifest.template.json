@@ -1,0 +1,44 @@
+{
+  "dataset_id": "vision_understanding_eval",
+  "version": "v1",
+  "state": "draft",
+  "purpose": "独立视觉理解最终评测",
+  "frozen": false,
+  "created_at": "2026-08-26",
+  "created_by": "待填写",
+  "source": "待填写",
+  "license": "待填写",
+  "policy": {
+    "used_for_training": false,
+    "used_for_validation": false,
+    "used_for_hyperparameter_selection": false,
+    "used_for_final_evaluation": true
+  },
+  "split_policy": {
+    "strategy": "independent_golden_set",
+    "group_field": "group_id",
+    "stratify_fields": ["task_type", "domain", "difficulty"],
+    "seed": null
+  },
+  "counts": {
+    "samples": 0,
+    "images": 0,
+    "reviewed_samples": 0,
+    "task_types": {},
+    "domains": {},
+    "difficulties": {}
+  },
+  "quality": {
+    "duplicate_image_groups": 0,
+    "cross_split_leakage_groups": 0,
+    "missing_answers": 0,
+    "invalid_json_answers": 0,
+    "unreviewed_samples": 0
+  },
+  "files": {
+    "metadata": "metadata.jsonl",
+    "images_root": "images/",
+    "sha256": "待生成"
+  },
+  "notes": "完成图片采集、标注复核和哈希计算后，将 template 文件改名为正式 manifest.json。"
+}

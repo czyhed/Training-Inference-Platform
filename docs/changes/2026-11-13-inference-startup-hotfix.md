@@ -1,0 +1,16 @@
+# Inference startup hotfix
+
+- Read: AGENTS.md, the engineering change gate, README.md, CURRENT_STATE.md, ARCHITECTURE.md, the Youyun inference provider, the instance manager, the inference runtime failure handler and its existing tests.
+- Boundaries: Youyun provider -> instance-manager call contract, and inference runtime startup failure/cleanup state. No schema, API payload, frontend or dependency changes.
+- Behavior: an inference service must never persist `starting`/15% after its startup coroutine has already failed.
+- Root cause: `YouyunInferenceProvider.start` passed the unsupported keyword `allow_resource_fallback` to `YouyunInstanceManager.create_one_shot`, so every remote start raised `TypeError` before any instance was created. The runtime caught only `(OSError, RuntimeError, ValueError)`, and `start_background`'s done-consumer swallowed the exception, leaving the service in `starting`.
+- Fix (2 source locations):
+  - `backend/providers/youyun/inference.py`: drop the unsupported keyword; `instance_mode` and `zone` remain.
+  - `backend/inference_service.py`: handle `Exception` so an unexpected startup error enters the existing failure path (cleanup, `failed`/`offline`, `gpu=未占用`), marked `# noqa: BLE001` because the imported provider error types are not a fixed closed set.
+- Not changed: manager implementation, state machine, progress mapping, frontend, dependencies, deployment files.
+- Failing test first: `backend/test_youyun_inference.py` `RuntimeLifecycleTests` fixture plus a real-provider call bound to an autospecced `YouyunInstanceManager`. Before the fix, the provider raised `TypeError("got an unexpected keyword argument 'allow_resource_fallback'")` and a completed failing start persisted `starting`.
+- Verification: both regression cases pass; focused modules `test_youyun_inference`, `test_youyun_inference_startup_config`, `test_inference_service` ran 74 tests OK; `py_compile` OK. Mirrored server source SHA256 (LF-normalized) equals the deployed hotfix image content: provider `805723786018b98b280b6d013ecbb9a4aa6b6929752a919b03548d3d4b2ac1eb`, runtime `64b8e28ce6be185813571d1aafb1f490c672b2ce55d595aa46456c286a0cd8ed`.
+- Resource impact: no GPU or Youyun instance created for this verification. The server deployment was applied only after training became idle; an active training job was never interrupted.
+- Rollback: restore the two pre-fix files (`e551bdb2...` and `ddfb166b...`). On the server, restore `/opt/xshipai-test/sources/cppt-platform` backups from `/opt/caocao-ai/backups/inference-hotfix-20261113/backend/`, restore the compose image line from `/opt/xshipai-test/backups/inference-hotfix-20261113/`, and recreate only `xshipai-test-cppt-backend-1`. No data migration.
+- Remaining risk: the previously stuck service keeps its historical `starting` record until the user stops it and starts a new attempt. Real end-to-end inference (instance allocation, model load, `/health`, minimal request) remains unverified and billable.
+- Deployment note: the container currently serving the 18181 entry point runs image `xshipai/cppt-backend:test-20261031-hotfix1`. That image was built by copying only these two files over the unchanged base image; its file timestamps read 1970 and are cosmetic.

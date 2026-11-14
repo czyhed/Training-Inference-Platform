@@ -1,0 +1,229 @@
+kind: pipeline
+type: docker
+name: cppt-platform-tag-deploy
+
+trigger:
+  event:
+  - tag
+
+# Both pipelines clone the exact revision directly from the private Gitea repo.
+# Branch pushes/PRs run gitea-ci below; only tags run production deployment.
+clone:
+  retries: 3
+volumes:
+- name: docker-sock
+  host:
+    path: /var/run/docker.sock
+- name: deploy-config
+  host:
+    path: /opt/cppt-platform
+steps:
+- name: verify-backend
+  image: python:3.11-bookworm
+  environment:
+    PIP_INDEX_URL: https://pypi.tuna.tsinghua.edu.cn/simple
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PYTHONUTF8: '1'
+  commands:
+  - 'python -m pip install --disable-pip-version-check -r requirements-storage.txt'
+  - 'python -m unittest discover -s backend -p ''test_*.py'' -v'
+  - 'python -m compileall -q backend scripts'
+- name: verify-frontend
+  image: node:22-bookworm-slim
+  environment:
+    NEXT_PUBLIC_API_BASE_URL: /api
+    NEXT_PUBLIC_INFERENCE_BASE_URL: ""
+    npm_config_registry: https://registry.npmmirror.com
+    CI: 'true'
+  commands:
+  - 'npm ci'
+  - 'npm run test:frontend'
+  - 'npx tsc --noEmit'
+  - 'npm run build'
+- name: verify-gateway
+  image: nginx:stable-alpine
+  commands:
+  - 'sed -i "s/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g" /etc/apk/repositories'
+  - 'apk add --no-cache python3 bash'
+  - 'python3 -m unittest backend.test_platform_gateway -v'
+- name: verify-compose
+  image: docker:24-cli
+  commands:
+  - 'sed -i "s/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g" /etc/apk/repositories'
+  - 'apk add --no-cache docker-cli-compose'
+  - 'test -f compose.production.yml'
+  - 'test -f .env.production.example'
+  - 'XUNTUI_ENV_FILE=.env.production.example docker compose --env-file .env.production.example -f compose.production.yml config --quiet'
+- name: build-backend-image
+  image: docker:24-cli
+  volumes:
+  - name: docker-sock
+    path: /var/run/docker.sock
+  commands:
+  - 'echo "Building cppt-platform-backend:${DRONE_TAG}"'
+  - 'docker build -f deploy/docker/backend.Dockerfile --build-arg INSTALL_LOCAL_RUNTIME=0 -t cppt-platform-backend:${DRONE_TAG} .'
+  - 'docker tag cppt-platform-backend:${DRONE_TAG} cppt-platform-backend:latest'
+- name: build-frontend-image
+  image: docker:24-cli
+  volumes:
+  - name: docker-sock
+    path: /var/run/docker.sock
+  commands:
+  - 'echo "Building cppt-platform-frontend:${DRONE_TAG}"'
+  - 'docker build -f deploy/docker/frontend.Dockerfile --build-arg NEXT_PUBLIC_API_BASE_URL=/api --build-arg NEXT_PUBLIC_INFERENCE_BASE_URL= --build-arg CPPT_DOCS_BACKEND_ORIGIN=http://backend:8010 -t cppt-platform-frontend:${DRONE_TAG} .'
+  - 'docker tag cppt-platform-frontend:${DRONE_TAG} cppt-platform-frontend:latest'
+- name: deploy
+  image: docker:24-cli
+  volumes:
+  - name: docker-sock
+    path: /var/run/docker.sock
+  - name: deploy-config
+    path: /deploy/cppt-platform
+  commands:
+  - 'sed -i "s/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g" /etc/apk/repositories'
+  - 'apk add --no-cache docker-cli-compose python3'
+  - 'test -f /deploy/cppt-platform/.env.production'
+  - 'mkdir -p /deploy/cppt-platform/deploy-data/runtime /deploy/cppt-platform/deploy-data/artifacts /deploy/cppt-platform/deploy-data/datasets /deploy/cppt-platform/deploy-data/uploads /deploy/cppt-platform/deploy-data/model-cache /deploy/cppt-platform/deploy-data/training-work'
+  - 'chown -R 1000:1000 /deploy/cppt-platform/deploy-data'
+  - 'export XUNTUI_ENV_FILE=/deploy/cppt-platform/.env.production'
+  - 'export XUNTUI_DEPLOY_DATA_ROOT=/opt/cppt-platform/deploy-data'
+  - 'export XUNTUI_RELEASE_VERSION=${DRONE_TAG}'
+  - 'export XUNTUI_BACKEND_IMAGE=cppt-platform-backend:${DRONE_TAG}'
+  - 'export XUNTUI_FRONTEND_IMAGE=cppt-platform-frontend:${DRONE_TAG}'
+  - 'docker compose --env-file "$XUNTUI_ENV_FILE" -f compose.production.yml config --quiet'
+  - 'docker run --rm --network host --entrypoint python cppt-platform-backend:${DRONE_TAG} scripts/check_release_idle.py --api http://127.0.0.1:18010/api'
+  - |
+    set -eu
+
+    # Start the backend independently so a failed Compose dependency health
+    # check cannot hide the backend logs from the Drone build output.
+    docker compose --env-file "$XUNTUI_ENV_FILE" -f compose.production.yml up -d --no-build --force-recreate --no-deps backend
+    backend_id="$(docker compose --env-file "$XUNTUI_ENV_FILE" -f compose.production.yml ps -q backend)"
+    test -n "$backend_id"
+
+    for attempt in $(seq 1 60); do
+      backend_status="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$backend_id" 2>/dev/null || true)"
+      echo "backend health attempt=$attempt status=$backend_status"
+      if [ "$backend_status" = healthy ]; then
+        break
+      fi
+      if [ "$backend_status" = exited ] || [ "$backend_status" = dead ]; then
+        break
+      fi
+      if [ "$attempt" = 60 ]; then
+        break
+      fi
+      sleep 2
+    done
+
+    backend_status="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$backend_id" 2>/dev/null || true)"
+    if [ "$backend_status" != healthy ]; then
+      echo "backend failed to become healthy; container state:"
+      docker inspect --format='status={{.State.Status}} exit_code={{.State.ExitCode}} error={{json .State.Error}} health={{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$backend_id" || true
+      echo "backend health check history:"
+      docker inspect --format='{{if .State.Health}}{{range .State.Health.Log}}{{println .Start "exit=" .ExitCode}}{{println .Output}}{{end}}{{else}}no healthcheck configured{{end}}' "$backend_id" || true
+      echo "backend logs:"
+      docker compose --env-file "$XUNTUI_ENV_FILE" -f compose.production.yml logs --no-color --tail=300 backend || true
+      exit 1
+    fi
+
+    docker compose --env-file "$XUNTUI_ENV_FILE" -f compose.production.yml up -d --no-build --force-recreate --no-deps frontend
+    frontend_id="$(docker compose --env-file "$XUNTUI_ENV_FILE" -f compose.production.yml ps -q frontend)"
+    test -n "$frontend_id"
+
+    for attempt in $(seq 1 60); do
+      frontend_status="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$frontend_id" 2>/dev/null || true)"
+      echo "frontend health attempt=$attempt status=$frontend_status"
+      if [ "$frontend_status" = healthy ]; then
+        break
+      fi
+      if [ "$frontend_status" = exited ] || [ "$frontend_status" = dead ]; then
+        break
+      fi
+      if [ "$attempt" = 60 ]; then
+        break
+      fi
+      sleep 2
+    done
+
+    frontend_status="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$frontend_id" 2>/dev/null || true)"
+    if [ "$frontend_status" != healthy ]; then
+      echo "frontend failed to become healthy; container state:"
+      docker inspect --format='status={{.State.Status}} exit_code={{.State.ExitCode}} error={{json .State.Error}} health={{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$frontend_id" || true
+      echo "frontend health check history:"
+      docker inspect --format='{{if .State.Health}}{{range .State.Health.Log}}{{println .Start "exit=" .ExitCode}}{{println .Output}}{{end}}{{else}}no healthcheck configured{{end}}' "$frontend_id" || true
+      echo "frontend logs:"
+      docker compose --env-file "$XUNTUI_ENV_FILE" -f compose.production.yml logs --no-color --tail=300 frontend || true
+      exit 1
+    fi
+
+    frontend_binding="$(docker inspect --format='{{(index (index .NetworkSettings.Ports "3100/tcp") 0).HostIp}}' "$frontend_id")"
+    test "$frontend_binding" = "127.0.0.1" || {
+      echo "frontend port 13100 must bind to 127.0.0.1, got $frontend_binding"
+      echo "容器本身已健康，服务可用；仅网关模式的安全断言未通过（临时公网直连 13100 仍有效）。"
+      echo "修复：编辑 /opt/cppt-platform/.env.production ——"
+      echo "  1) XUNTUI_FRONTEND_BIND=127.0.0.1"
+      echo "  2) XUNTUI_CORS_ORIGINS 增加 http://110.42.51.234（网关入口来源，否则 80 端口页面调用 API 会被 CORS 拦截）"
+      echo "改完后重新打 tag 部署即可通过。详见 docs/archive/PHASE2_DEPLOYMENT_HANDOFF.md 网关模式切换清单。"
+      exit 1
+    }
+  - 'mkdir -p /deploy/cppt-platform/scripts /deploy/cppt-platform/deploy/nginx'
+  - 'cp scripts/install-platform-gateway.sh /deploy/cppt-platform/scripts/'
+  - 'cp deploy/nginx/cppt-platform.production.conf /deploy/cppt-platform/deploy/nginx/'
+  - 'docker run --rm --privileged --pid=host --network=host -v /:/host alpine:3.21 chroot /host /bin/bash /opt/cppt-platform/scripts/install-platform-gateway.sh'
+  - 'docker run --rm --network host --entrypoint python cppt-platform-backend:${DRONE_TAG} scripts/check_training_websocket.py --api http://127.0.0.1:13101/api'
+  - 'docker compose --env-file "$XUNTUI_ENV_FILE" -f compose.production.yml ps'
+---
+kind: pipeline
+type: docker
+name: gitea-ci
+clone:
+  retries: 3
+trigger:
+  event:
+  - custom
+  - pull_request
+  - push
+steps:
+- name: verify-backend
+  image: python:3.11-bookworm
+  environment:
+    PIP_INDEX_URL: https://pypi.tuna.tsinghua.edu.cn/simple
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PYTHONUTF8: '1'
+  commands:
+  - 'python -m pip install --disable-pip-version-check -r requirements-storage.txt'
+  - 'python -m unittest discover -s backend -p ''test_*.py'' -v'
+  - 'python -m compileall -q backend scripts'
+  pull: if-not-exists
+- name: verify-frontend
+  image: node:22-bookworm-slim
+  environment:
+    NEXT_PUBLIC_API_BASE_URL: /api
+    NEXT_PUBLIC_INFERENCE_BASE_URL: ""
+    npm_config_registry: https://registry.npmmirror.com
+    CI: 'true'
+  commands:
+  - 'npm ci'
+  - 'npm run test:frontend'
+  - 'npx tsc --noEmit'
+  - 'npm run build'
+  pull: if-not-exists
+- name: verify-gateway
+  image: nginx:stable-alpine
+  commands:
+  - 'sed -i "s/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g" /etc/apk/repositories'
+  - 'apk add --no-cache python3 bash'
+  - 'python3 -m unittest backend.test_platform_gateway -v'
+  pull: if-not-exists
+  environment: {}
+- name: verify-compose
+  image: docker:24-cli
+  commands:
+  - 'sed -i "s/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g" /etc/apk/repositories'
+  - 'apk add --no-cache docker-cli-compose'
+  - 'test -f compose.production.yml'
+  - 'test -f .env.production.example'
+  - 'XUNTUI_ENV_FILE=.env.production.example docker compose --env-file .env.production.example -f compose.production.yml config --quiet'
+  pull: if-not-exists
+  environment: {}

@@ -34,7 +34,7 @@ const parameters = [
 export function SpeechApiDocs({ request }: { request: SpeechRequest }) {
   const [language,setLanguage] = useState("Python");
   const [notice,setNotice] = useState("");
-  const origin = typeof window === "undefined" ? "http://203.0.113.12:18181" : window.location.origin;
+  const origin = typeof window === "undefined" ? "http://23.144.68.140:18181" : window.location.origin;
   const desktop = new URL(origin); desktop.port = "18180";
   const payload = { ...request, requestId: "example-" + "001" };
   const json = JSON.stringify(payload,null,2);

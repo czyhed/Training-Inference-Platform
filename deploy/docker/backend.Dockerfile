@@ -15,8 +15,8 @@ ENV PYTHONUNBUFFERED=1 \
     HOME=/workspace \
     TZ=Asia/Shanghai \
     PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
-    PIP_FIND_LINKS=http://203.0.113.10:19000/wheelhouse/index.html \
-    PIP_TRUSTED_HOST=203.0.113.10 \
+    PIP_FIND_LINKS=http://110.42.51.234:19000/wheelhouse/index.html \
+    PIP_TRUSTED_HOST=110.42.51.234 \
     PIP_RETRIES=10 \
     PIP_TIMEOUT=60
 

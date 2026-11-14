@@ -263,8 +263,8 @@ class InstanceParseTest(unittest.TestCase):
 
     def test_parses_port_first_ssh_command(self) -> None:
         # 优云实际返回顺序：ssh -p 23 root@1.2.3.4
-        instance = YouyunInstance.from_api({"UHostId": "uhost-3", "SshLoginCommand": "ssh -p 23 root@203.0.113.13"})
-        self.assertEqual(instance.ip, "203.0.113.13")
+        instance = YouyunInstance.from_api({"UHostId": "uhost-3", "SshLoginCommand": "ssh -p 23 root@117.50.183.121"})
+        self.assertEqual(instance.ip, "117.50.183.121")
         self.assertEqual(instance.ssh_port, 23)
         self.assertEqual(instance.ssh_user, "root")
 
