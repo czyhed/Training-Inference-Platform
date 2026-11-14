@@ -13,8 +13,8 @@
 | Compose 目录 | `/opt/cppt-platform`（`.env.production` + `compose.production.yml` + `deploy-data/`） |
 | PostgreSQL | 容器 `postgresql_18_test-postgresql_18_test-1`，宿主 `:35432`，平台库 `cppt_platform`，应用角色 `cppt_platform_app` |
 | MinIO | 容器 `minio_test-minio_test-1`，宿主 `:19000`，桶 `rag-assets`；另有 `wheelhouse` 桶（构建轮子，勿删） |
-| Drone | `http://drone.leiziapi.cn:4400/leifengyang/cppt-platform`，新 Gitea Drone 和 runner，仍在生产 Docker 主机 |
-| Git 远程 | `origin` = Gitea `http://git.leiziapi.cn:3003/leifengyang/cppt-platform.git`；本机 `github` 仅历史读取、禁用推送 |
+| Drone | Gitea 项目对应的 Drone，新 Drone 和 runner，仍在生产 Docker 主机 |
+| Git 远程 | `origin` 指向 Gitea 仓库；本机 `github` 仅历史读取、禁用推送 |
 | Control Center | **已停止**（数据保留），恢复方式见 §7 |
 
 服务器到 GitHub / pytorch.org 等国际站点出网被掐（单连接 10–60KB/s 且常 reset），到国内镜像（aliyun/tuna/npmmirror）正常。**所有 CI 出网必须走国内镜像或本机 MinIO wheelhouse。**
@@ -28,12 +28,12 @@ git tag -a <new-version> -m "release note"
 bash scripts/release-bundle.sh <new-version>
 ```
 
-兼容脚本现在只校验 `origin` 的 Gitea 推送地址，再执行 `git push origin refs/tags/<new-version>`。新 Drone 直接克隆 Gitea 对应 SHA；无需 bundle、scp 或服务器 root SSH。脚本在 WSL 中可复用 Windows `git.exe` 和凭据管理器。
+兼容脚本现在只校验 `origin` 的推送地址不是 GitHub 或多目标，再执行 `git push origin refs/tags/<new-version>`。新 Drone 直接克隆 Gitea 对应 SHA；无需 bundle、scp 或服务器 root SSH。脚本在 WSL 中可复用 Windows `git.exe` 和凭据管理器。
 
 - 普通 push / PR / 手动检查只跑测试与前端构建；tag 才执行生产镜像构建和部署。
 - Drone 仓库配置 `.drone.yml`、Active、Trusted，timeout 240 分钟；Webhook 指向新 Drone `:4400`。
 - 发布继续使用 `/opt/cppt-platform/.env.production`、Docker socket 和原持久化目录；先检查活动任务，再按原健康检查与回滚流程部署。
-- 从 [Drone 构建页](http://drone.leiziapi.cn:4400/leifengyang/cppt-platform) 查看状态和步骤日志；旧 `:4399` 是历史 GitHub Drone。
+- 从 Gitea 项目对应的 Drone 构建页查看状态和步骤日志；旧 `:4399` 是历史 GitHub Drone。
 - 不复用已有标签，不批量推送旧标签来测试迁移。
 
 ## 3. 镜像构建规则（backend.Dockerfile）

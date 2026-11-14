@@ -124,7 +124,7 @@ git diff --check
 
 只有最新 `master` 通过发布前检查后才能打 Tag：
 
-默认 `origin` 是 `http://git.leiziapi.cn:3003/leifengyang/cppt-platform.git`；本机 `github` 仅保留历史读取并禁用推送。所有分支与 Tag 都推到 Gitea。下面的兼容脚本现在直接推送指定 Tag，Drone 从 Gitea 克隆，无需上传 bundle。
+默认 `origin` 指向 Gitea 仓库；本机 `github` 仅保留历史读取并禁用推送。所有分支与 Tag 都推到 Gitea。下面的兼容脚本现在直接推送指定 Tag，Drone 从 Gitea 克隆，无需上传 bundle。
 
 ```powershell
 git switch master

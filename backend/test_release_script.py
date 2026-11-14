@@ -33,19 +33,19 @@ class ReleaseScriptTests(unittest.TestCase):
         )
 
     def test_gitea_release_pushes_only_the_requested_tag(self):
-        result = self.run_release('http://git.leiziapi.cn:3003/leifengyang/cppt-platform.git')
+        result = self.run_release('http://git.example.test:3003/team/cppt-platform.git')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn('PUSH <push> <origin> <refs/tags/v9.9.999>', result.stdout)
         self.assertNotIn('UNEXPECTED_', result.stdout)
 
     def test_ssh_gitea_remote_is_supported(self):
-        result = self.run_release('ssh://git@git.leiziapi.cn:2222/leifengyang/cppt-platform.git')
+        result = self.run_release('ssh://git@git.example.test:2222/team/cppt-platform.git')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_github_or_multiple_push_destinations_are_rejected(self):
         for urls in [
-            'https://github.com/leifengyang/cppt-platform.git',
-            'http://git.leiziapi.cn:3003/leifengyang/cppt-platform.git\nhttps://github.com/leifengyang/cppt-platform.git',
+            'https://github.com/example/cppt-platform.git',
+            'http://git.example.test:3003/team/cppt-platform.git\nhttps://github.com/example/cppt-platform.git',
         ]:
             with self.subTest(urls=urls):
                 result = self.run_release(urls)
@@ -54,7 +54,7 @@ class ReleaseScriptTests(unittest.TestCase):
                 self.assertNotIn('PUSH <', result.stdout)
 
     def test_missing_tag_does_not_push(self):
-        result = self.run_release('http://git.leiziapi.cn:3003/leifengyang/cppt-platform.git', missing=True)
+        result = self.run_release('http://git.example.test:3003/team/cppt-platform.git', missing=True)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('does not exist locally', result.stderr)
         self.assertNotIn('PUSH <', result.stdout)

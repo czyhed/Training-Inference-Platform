@@ -1212,8 +1212,7 @@ failed
 
 ### 25.3 代码仓库与部署方式
 
-- GitHub 仓库页面：`https://github.com/leifengyang/cppt-platform`。
-- GitHub HTTPS 仓库：`https://github.com/leifengyang/cppt-platform.git`。
+- GitHub 仓库页面与 HTTPS 克隆地址以当前 `origin` 配置为准，本文档不记录具体账号路径。
 - Drone：用户确认已经部署。
 - 部署方式：Docker Compose。
 - 发布触发：先上传 Git bundle，再向 GitHub 推送符合约定的版本标签；默认标签规则为 `v*`，最终以 `.drone.yml` 中的条件为准。

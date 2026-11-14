@@ -18,12 +18,12 @@ fi
 "${git_command[@]}" rev-parse -q --verify "refs/tags/${tag}^{commit}" >/dev/null \
   || { echo "tag ${tag} does not exist locally; create it first" >&2; exit 1; }
 
-# Reject old multi-destination remotes that could also publish to GitHub.
+# Reject GitHub or multi-destination remotes that could publish elsewhere.
 push_urls="$("${git_command[@]}" remote get-url --push --all "$remote" | tr -d '\r')"
-case "$push_urls" in
-  http://git.leiziapi.cn:3003/leifengyang/cppt-platform.git|ssh://git@git.leiziapi.cn:2222/leifengyang/cppt-platform.git) ;;
-  *) echo "origin must push only to the Gitea cppt-platform repository" >&2; exit 1 ;;
-esac
+if [[ -z "$push_urls" || "$push_urls" == *$'\n'* || "$push_urls" == *github.com* ]]; then
+  echo "origin must push only to the Gitea repository" >&2
+  exit 1
+fi
 
 "${git_command[@]}" push "${remote}" "refs/tags/${tag}"
-echo "tag ${tag} pushed to Gitea; follow http://drone.leiziapi.cn:4400/leifengyang/cppt-platform"
+echo "tag ${tag} pushed to Gitea; follow the Drone pipeline for this project"

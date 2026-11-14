@@ -11,7 +11,7 @@
 ## 发布前检查
 
 1. 仓库管理员在 GitHub 将默认分支设置为 `master`。
-2. 确认 `origin` 指向 `https://github.com/leifengyang/cppt-platform.git`，当前发布分支跟踪 `origin/*`。
+2. 确认 `origin` 指向目标 GitHub 仓库，当前发布分支跟踪 `origin/*`。
 3. 确认生产环境包含：
 
    ```env

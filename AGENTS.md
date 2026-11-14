@@ -16,8 +16,8 @@ This is a single-context repository. Domain notes live in `CONTEXT.md` when crea
 
 ## Working conventions
 
-- The canonical remote is Gitea: `origin` = `http://git.leiziapi.cn:3003/leifengyang/cppt-platform.git` (SSH alternative: `ssh://git@git.leiziapi.cn:2222/leifengyang/cppt-platform.git`). Push branches and release tags only to Gitea. The optional `github` remote is for historical reads and has push disabled in this desktop checkout.
-- Drone lives at `http://drone.leiziapi.cn:4400/leifengyang/cppt-platform`. Push/PR events run verification; tags run the production release pipeline. Drone clones directly from Gitea; no release bundle upload is needed. Do not create a production tag just to test CI.
+- The canonical remote is Gitea, configured as `origin`. Push branches and release tags only to Gitea. The optional `github` remote is for historical reads and has push disabled in this desktop checkout.
+- Drone runs against the Gitea project. Push/PR events run verification; tags run the production release pipeline. Drone clones directly from Gitea; no release bundle upload is needed. Do not create a production tag just to test CI.
 - Keep changes scoped to the requested behavior and preserve unrelated user changes.
 - Prefer the existing TypeScript, React, FastAPI, SQLite/PostgreSQL, and test patterns already in the repository.
 - Run focused tests and type checks for changed areas; run the broader suite when shared contracts change.

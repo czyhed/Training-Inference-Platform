@@ -47,9 +47,9 @@ Inference services support local vLLM and the Youyun remote provider. Local serv
 
 ## Gitea development and Drone releases
 
-The canonical repository is [Gitea leifengyang/cppt-platform](http://git.leiziapi.cn:3003/leifengyang/cppt-platform), configured as `origin`. The optional `github` remote is retained for historical reads; push is disabled in this desktop checkout. Ordinary `git push` sends the current branch to Gitea.
+The canonical repository is configured as `origin` on Gitea. The optional `github` remote is retained for historical reads; push is disabled in this desktop checkout. Ordinary `git push` sends the current branch to Gitea.
 
-[Drone](http://drone.leiziapi.cn:4400/leifengyang/cppt-platform) reads [`.drone.yml`](.drone.yml) directly from Gitea:
+The Drone pipeline reads [`.drone.yml`](.drone.yml) directly from Gitea:
 
 - Branch pushes, pull requests, and manual builds run `gitea-ci`: backend tests, frontend tests/type checks/production build, gateway tests, and production Compose validation.
 - Release tags run `cppt-platform-tag-deploy`: the same verification, backend/frontend image builds, the production idle guard, Compose deployment, health checks, gateway installation, and WebSocket verification.
@@ -194,7 +194,7 @@ The phase-two code was pushed to Gitee in commit `ffa20f8` on branch `master`. T
 
 ## Data, artifacts, and Git
 
-Source code is under `app/`, `components/`, `lib/`, `backend/`, and `scripts/`. The sample dataset is under `data/qwenruozhi_v1`; its authorization is not yet confirmed. User uploads, SQLite databases, WSL artifacts/checkpoints, model caches, `.next`, `node_modules`, Python caches, and `unsloth_compiled_cache` are runtime or cache data and must not be committed. The repository uses Gitea `origin` at `http://git.leiziapi.cn:3003/leifengyang/cppt-platform.git`; all branch and tag pushes go there. Team members develop on separate personal feature branches and merge reviewed work into `master`; only tested `master` commits receive release tags. See [CONTRIBUTING.md](CONTRIBUTING.md). `.env`, runtime outputs, caches, dependencies, databases, logs, and build artifacts are ignored; review `git status --short --ignored` before every push.
+Source code is under `app/`, `components/`, `lib/`, `backend/`, and `scripts/`. The sample dataset is under `data/qwenruozhi_v1`; its authorization is not yet confirmed. User uploads, SQLite databases, WSL artifacts/checkpoints, model caches, `.next`, `node_modules`, Python caches, and `unsloth_compiled_cache` are runtime or cache data and must not be committed. The repository uses Gitea `origin`; all branch and tag pushes go there. Team members develop on separate personal feature branches and merge reviewed work into `master`; only tested `master` commits receive release tags. See [CONTRIBUTING.md](CONTRIBUTING.md). `.env`, runtime outputs, caches, dependencies, databases, logs, and build artifacts are ignored; review `git status --short --ignored` before every push.
 
 ## Security and licensing gate
 

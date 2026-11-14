@@ -11,8 +11,8 @@
 
 ## 2026-10-08 Gitea / Drone 仓库迁移
 
-- 开发与发布仓库为 `http://git.leiziapi.cn:3003/leifengyang/cppt-platform`；桌面工作区 `origin` 和当前分支 upstream 指向 Gitea，`github` 仅保留历史读取、禁用推送。
-- 新 Drone：`http://drone.leiziapi.cn:4400/leifengyang/cppt-platform`。普通 push / PR / 手动检查运行后端测试、前端测试/类型/构建、网关测试和 Compose 校验；tag 保持原有测试、镜像构建、空闲检查、部署、健康和 WebSocket 验收。
+- 开发与发布仓库托管在 Gitea；桌面工作区 `origin` 和当前分支 upstream 指向该仓库，`github` 仅保留历史读取、禁用推送。
+- 新 Drone 运行在该 Gitea 项目上。普通 push / PR / 手动检查运行后端测试、前端测试/类型/构建、网关测试和 Compose 校验；tag 保持原有测试、镜像构建、空闲检查、部署、健康和 WebSocket 验收。
 - 两条流水线直接从 Gitea 克隆对应 SHA。`scripts/release-bundle.sh` 保留旧入口名称，现只校验 Gitea 目标并推送指定 tag，无需上传 bundle 或服务器 root SSH。
 - 本次迁移只验证 CI，不创建生产发布标签，不改变运行中的平台版本或云资源。
 
@@ -77,7 +77,7 @@
 
 ## 2026-09-13 v3.0.130 新服务器迁移部署完成（Drone 全链路打通，Control Center 暂时摘除）
 
-- **服务器迁移**：生产从 `185.61.210.32` 迁到新服务器 `110.42.51.234`（代码仓库同步迁到 GitHub `leifengyang/cppt-platform`，Drone server+runner 也在新服务器上）。PostgreSQL/MinIO 数据经迁移备份恢复；deploy-data（datasets/runtime/training-work 等）已就位。
+- **服务器迁移**：生产从 `185.61.210.32` 迁到新服务器 `110.42.51.234`（代码仓库同步迁移到 GitHub，Drone server+runner 也在新服务器上）。PostgreSQL/MinIO 数据经迁移备份恢复；deploy-data（datasets/runtime/training-work 等）已就位。
 - **v3.0.130 经 Drone tag 流水线部署成功并验收**：build 七步全绿（fetch-source → verify-backend → verify-frontend → verify-compose → 双镜像构建 → deploy），backend/frontend 容器 healthy，`/api/health` 返回 `releaseVersion=v3.0.130`、queue=postgres、judge/embedding 已配置。平台入口 `http://110.42.51.234:13101/`。
 - **为打通流水线修复的一串 CI 问题**（新服务器国际出网被掐是根源）：
   1. Drone 默认 clone 连不上 GitHub → `.drone.yml` 改 `clone: disable: true` + 自定义 `fetch-source` 步从上传到服务器的 git bundle checkout；发版脚本 `scripts/release-bundle.sh`（打 tag → scp bundle → push tag）。
