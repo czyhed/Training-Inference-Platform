@@ -37,7 +37,7 @@ export function PlatformShell({
     <div className="app-shell workspace-reference-skin-shell">
       <aside className="sidebar">
         <div className="brand"><img src="/logo.png" alt="" width={38} height={38} style={{ objectFit: "contain", flexShrink: 0 }} /><span className="brand-name">训推平台</span></div>
-        <div className="space-switcher"><span className="space-label">当前业务空间</span><span className="space-name">大模型研发中心⌄</span></div>
+        <div className="space-switcher"><span className="space-label">当前业务空间</span><span className="space-name">大模型研发中心</span></div>
         <nav className="nav" aria-label="主导航">
           {navigation.map((item) => {
             const Icon = item.icon;
