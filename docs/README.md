@@ -33,6 +33,17 @@
 - [项目学习资料](project-learning/)
 - [归档文档](archive/)
 
+## 仓库目录结构
+
+- `app/`、`components/`、`lib/`：Next.js 页面、组件与客户端逻辑。
+- `backend/`：FastAPI 服务。后端测试与源码同目录，`.drone.yml` 以 `python -m unittest discover -s backend -p 'test_*.py'` 运行；保留原位是为了不破坏测试中基于文件位置的相对路径。
+- `data/`：内置样例数据集，被前端与 `scripts/` 按相对路径引用，不可移动。
+- `test-data/`：脚本测试样本，被 `scripts/verify_best_checkpoint_e2e.py` 默认引用。
+- `deploy/`：镜像构建、部署脚本与优云配置。
+- `docs/`：架构、状态、部署、需求与调研文档。
+- `scripts/`：训练、验收与评测脚本。
+- `public/`：Next.js 静态资源。
+
 ## 根目录保留文件
 
 以下文件被 CI、Dockerfile、部署脚本或既有流程按根路径引用，继续保留在仓库根目录：
