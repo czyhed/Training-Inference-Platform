@@ -1,7 +1,7 @@
 # 阶段一交接说明：LLaMA-Factory CPU 改造
 
 更新时间：2026-08-21
-需求依据：`D:\训推平台\REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md`
+需求依据：`D:\训推平台\../REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md`
 
 ## 当前结论
 

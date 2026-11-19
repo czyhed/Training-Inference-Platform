@@ -44,8 +44,8 @@
 
 ```text
 PHASE1_HANDOFF.md
-REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md
-CURRENT_STATE.md
+../REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md
+../CURRENT_STATE.md
 PHASE2_DEPLOYMENT_HANDOFF.md
 BUGFIX_HANDOFF.md
 ```
@@ -75,7 +75,7 @@ npm run build
 ```
 
 7. 涉及 Compose 时运行 production config 检查；涉及部署时只重建本应用的 backend/frontend，不操作其他服务容器。
-8. 修复后同时验证服务器内部请求和公网入口，并更新 `CURRENT_STATE.md` 与本文件。
+8. 修复后同时验证服务器内部请求和公网入口，并更新 `../CURRENT_STATE.md` 与本文件。
 
 ## 部署方式说明
 
@@ -93,8 +93,8 @@ npm run build
 
 先读取：
 - D:\训推平台\PHASE1_HANDOFF.md
-- D:\训推平台\REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md
-- D:\训推平台\CURRENT_STATE.md
+- D:\训推平台\../REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md
+- D:\训推平台\../CURRENT_STATE.md
 - D:\训推平台\PHASE2_DEPLOYMENT_HANDOFF.md
 - D:\训推平台\BUGFIX_HANDOFF.md
 
@@ -402,7 +402,7 @@ python -m py_compile backend/inference_service.py  # passed
 请继续执行 D:\训推平台 的 PostgreSQL 推理存储和 CPU vLLM 改造。
 
 先读取：
-- D:\训推平台\CURRENT_STATE.md
+- D:\训推平台\../CURRENT_STATE.md
 - D:\训推平台\BUGFIX_HANDOFF.md
 - D:\训推平台\PHASE2_DEPLOYMENT_HANDOFF.md
 
@@ -566,7 +566,7 @@ scripts/youyun_smoke.py（WSL unsloth_env python 运行）完整链路一次跑�
    - 注意：本地 .env 的 POSTGRES_DSN 指向生产库（185.61.210.32:35432），本地测试任务会出现在生产任务列表，测试完删除。
 2. **回归与提交**：`python -m unittest discover -s backend -p "test_*.py"` 在 Windows 有 12 个历史环境性失败（基线对比过，与本次无关；Linux/Drone 全绿为准）；`npx tsc --noEmit`、`npm run build` 应通过。然后按仓库惯例提交（feat: 阶段五优云 SSH 远程训练）。
 3. **发版**：打 tag（v3.0.8）触发 Drone → 验证 http://185.61.210.32:18010/api/health 与门户。
-4. **归档**：对照 REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md 第 29 节验收清单逐条勾稽，更新文档。
+4. **归档**：对照 ../REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md 第 29 节验收清单逐条勾稽，更新文档。
 
 ### 关键坑（排障先看）
 

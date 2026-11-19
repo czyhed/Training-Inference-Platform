@@ -224,7 +224,7 @@ git commit -m "feat: add image generation history workspace"
 
 **Files:**
 - Modify: `README.md`
-- Modify: `CURRENT_STATE.md`
+- Modify: `../../CURRENT_STATE.md`
 - Extend: `backend/test_image_generation_runtime.py`
 - Extend: `backend/test_image_generation_api.py`
 - Extend: `lib/image-generation-runtime.test.mjs`
@@ -258,7 +258,7 @@ Expected: all commands exit with code 0; no GPU, SSH, Diffusers, or real Youyun 
 - [ ] **Step 4: Commit**
 
 ```powershell
-git add README.md CURRENT_STATE.md backend/test_image_generation_runtime.py backend/test_image_generation_api.py lib/image-generation-runtime.test.mjs
+git add README.md ../../CURRENT_STATE.md backend/test_image_generation_runtime.py backend/test_image_generation_api.py lib/image-generation-runtime.test.mjs
 git commit -m "docs: complete image generation phase six"
 ```
 

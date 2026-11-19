@@ -274,7 +274,7 @@ git commit -m "feat: guard Youyun vision acceptance and cleanup"
 
 **Files:**
 - Modify: `docs/superpowers/plans/2026-09-02-youyun-vision-small-models.md` to check completed steps
-- Modify: `CURRENT_STATE.md` only after acceptance evidence exists
+- Modify: `../../CURRENT_STATE.md` only after acceptance evidence exists
 
 - [x] **Step 1: Run backend focused suite**
 
@@ -298,9 +298,9 @@ Execute the probe and small-sample run for `Qwen2.5-VL-3B`; if it fails, run the
 
 - [ ] **Step 6: Update durable status and commit evidence**
 
-Update `CURRENT_STATE.md` with only observed results, limitations and exact model/image status. Commit the plan checklist and status evidence separately.
+Update `../../CURRENT_STATE.md` with only observed results, limitations and exact model/image status. Commit the plan checklist and status evidence separately.
 
 ```bash
-git add docs/superpowers/plans/2026-09-02-youyun-vision-small-models.md CURRENT_STATE.md
+git add docs/superpowers/plans/2026-09-02-youyun-vision-small-models.md ../../CURRENT_STATE.md
 git commit -m "docs: record vision model acceptance evidence"
 ```

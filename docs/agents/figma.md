@@ -6,7 +6,7 @@
 
 - 仓库配置：.codex/config.toml 中的 mcp_servers.figma 指向 https://mcp.figma.com/mcp。
 - Codex 全局配置：官方 figma@openai-api-curated 插件已启用。
-- 设计规范：实现本项目页面前先读根目录 DESIGN.md，其中包含 Xuntui 的产品语境、颜色、排版和响应式检查清单。
+- 设计规范：实现本项目页面前先读根目录 ../DESIGN.md，其中包含 Xuntui 的产品语境、颜色、排版和响应式检查清单。
 - 认证：使用 Codex/Figma OAuth 连接，不把 Figma Token 写入仓库、.env、命令行参数或聊天记录。
 
 ## 如何使用
@@ -17,7 +17,7 @@
 
 ### 2. 先获取设计上下文
 
-对于“把 Figma 做成 React/Next.js 页面或组件”的任务，先调用 get_design_context，再写代码。它提供结构化参考代码、截图、设计标注、组件/变量提示和资源链接。返回内容是参考，不应原样粘贴；要按本项目现有组件、CSS 和 DESIGN.md tokens 改写。
+对于“把 Figma 做成 React/Next.js 页面或组件”的任务，先调用 get_design_context，再写代码。它提供结构化参考代码、截图、设计标注、组件/变量提示和资源链接。返回内容是参考，不应原样粘贴；要按本项目现有组件、CSS 和 ../DESIGN.md tokens 改写。
 
 ### 3. 按七步工作流落地
 
@@ -25,7 +25,7 @@
 2. **获取 Design Context**：读取布局层级、尺寸、字体、颜色、变量、组件和标注。
 3. **获取 Screenshot**：用截图核对整体层级和视觉细节；截图不是结构信息的替代品。
 4. **资源管理**：下载并提交实际图片、Logo、SVG 图标等资源。MCP 返回的资源 URL 约 7 天过期，不要把临时 URL 当成长期资产。
-5. **代码生成**：把参考代码适配为本仓库的 Next.js/React 组件和 DESIGN.md tokens。
+5. **代码生成**：把参考代码适配为本仓库的 Next.js/React 组件和 ../DESIGN.md tokens。
 6. **项目适配**：优先复用现有组件、变量、主题和交互；例如已有 Button/Card 时不要再造一套只为匹配截图。
 7. **视觉验证**：启动本地页面，在桌面和移动视口截图对比，检查裁切、溢出、重叠、间距、字体和资源加载；发现差异后做小范围修正再复核。
 
@@ -43,14 +43,14 @@
 - Figma Plugin API 中颜色通道是 0-1，不是 0-255；字体修改必须先 loadFontAsync 并等待完成。
 - Figma 页面按需加载，切换页面使用 await figma.setCurrentPageAsync(page)；不要使用同步的 figma.currentPage = page。
 - Auto Layout 的 HUG/FILL 受父子结构限制，通常先 append 到 Auto Layout 父节点，再设置 sizing；相关写操作不要一次塞入过多节点。
-- 本项目是中文优先的训练/推理控制台，页面实现需遵守 DESIGN.md，并覆盖 1440px、约 1024px 及适用时的 390px 视口。
+- 本项目是中文优先的训练/推理控制台，页面实现需遵守 ../DESIGN.md，并覆盖 1440px、约 1024px 及适用时的 390px 视口。
 
 ## 常用请求模板
 
 ~~~text
 请根据这个 Figma 节点实现到当前 Next.js 项目：<Figma 节点链接>
 目标文件/组件：<路径或组件名>
-先获取 Design Context 和 Screenshot；复用现有组件和 DESIGN.md tokens；下载并使用真实资源；完成后做桌面和移动视口视觉验证，并列出仍存在的差异。
+先获取 Design Context 和 Screenshot；复用现有组件和 ../DESIGN.md tokens；下载并使用真实资源；完成后做桌面和移动视口视觉验证，并列出仍存在的差异。
 ~~~
 
 ## 认证与故障排查

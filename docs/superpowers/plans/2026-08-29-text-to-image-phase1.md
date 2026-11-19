@@ -151,7 +151,7 @@
 
 **Files:**
 - Modify: `README.md` current scope and local testing notes
-- Modify: `CURRENT_STATE.md` capability matrix and deferred scope
+- Modify: `../../CURRENT_STATE.md` capability matrix and deferred scope
 - Extend: `lib/image-generation.test.mjs`
 - Extend: `backend/test_image_generation_api.py`
 

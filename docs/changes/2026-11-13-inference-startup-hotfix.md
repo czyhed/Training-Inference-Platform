@@ -1,6 +1,6 @@
 # Inference startup hotfix
 
-- Read: AGENTS.md, the engineering change gate, README.md, CURRENT_STATE.md, ARCHITECTURE.md, the Youyun inference provider, the instance manager, the inference runtime failure handler and its existing tests.
+- Read: AGENTS.md, the engineering change gate, README.md, ../CURRENT_STATE.md, ../ARCHITECTURE.md, the Youyun inference provider, the instance manager, the inference runtime failure handler and its existing tests.
 - Boundaries: Youyun provider -> instance-manager call contract, and inference runtime startup failure/cleanup state. No schema, API payload, frontend or dependency changes.
 - Behavior: an inference service must never persist `starting`/15% after its startup coroutine has already failed.
 - Root cause: `YouyunInferenceProvider.start` passed the unsupported keyword `allow_resource_fallback` to `YouyunInstanceManager.create_one_shot`, so every remote start raised `TypeError` before any instance was created. The runtime caught only `(OSError, RuntimeError, ValueError)`, and `start_background`'s done-consumer swallowed the exception, leaving the service in `starting`.

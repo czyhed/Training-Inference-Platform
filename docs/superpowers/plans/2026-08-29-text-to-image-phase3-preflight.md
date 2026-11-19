@@ -45,7 +45,7 @@
 
 **Files:**
 - Modify: `README.md`
-- Modify: `CURRENT_STATE.md`
+- Modify: `../../CURRENT_STATE.md`
 
 - [x] 记录预检边界、状态含义和真实实例验收仍需人工执行。
 - [x] 运行后端全量测试、前端测试、compileall、TypeScript、build 和 diff check。

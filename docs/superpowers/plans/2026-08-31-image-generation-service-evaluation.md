@@ -414,7 +414,7 @@ Expected: tests and type checking pass.
 
 **Files:**
 - Modify: `backend/test_image_generation_e2e.py`
-- Modify: `CURRENT_STATE.md`
+- Modify: `../../CURRENT_STATE.md`
 
 **Interfaces:**
 - Consumes: all earlier tasks.

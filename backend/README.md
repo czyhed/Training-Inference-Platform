@@ -5,8 +5,8 @@ The backend is a FastAPI service launched inside WSL by `scripts/run_backend.py`
 Use the root documentation as the source of truth:
 
 - [../README.md](../README.md) for startup and tests
-- [../CURRENT_STATE.md](../CURRENT_STATE.md) for the audited implementation and runtime paths
-- [../ARCHITECTURE.md](../ARCHITECTURE.md) for API and storage boundaries
+- [../docs/CURRENT_STATE.md](../docs/CURRENT_STATE.md) for the audited implementation and runtime paths
+- [../docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for API and storage boundaries
 
 The normal local API is `http://127.0.0.1:8010`; the frontend is normally `http://127.0.0.1:3100` on this machine.
 

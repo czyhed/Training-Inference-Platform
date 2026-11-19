@@ -1,6 +1,6 @@
 # Xuntui Platform Agent Notes
 
-This repository is an internal model training and inference platform with a Next.js frontend and a FastAPI/Python backend. Read `README.md`, `CURRENT_STATE.md`, and `ARCHITECTURE.md` when the task touches an area they describe.
+This repository is an internal model training and inference platform with a Next.js frontend and a FastAPI/Python backend. Read `README.md`, `docs/CURRENT_STATE.md`, and `docs/ARCHITECTURE.md` when the task touches an area they describe.
 
 Before changing any code, tests, schemas, configuration, or deployment files, read [`docs/训推平台-工程规范与变更门禁.md`](docs/训推平台-工程规范与变更门禁.md). It is the mandatory project gate for system boundaries, data transfer, validation, state transitions, cloud-resource cleanup, BUG fixes, testing, and release acceptance. Record the affected boundary, failing test, resource lifecycle, verification commands, and rollback plan before implementation.
 

@@ -1,6 +1,6 @@
 # Personal Youyun accounts
 
-- Read: AGENTS.md, README.md, CURRENT_STATE.md, ARCHITECTURE.md, CONTRIBUTING.md and the engineering change gate.
+- Read: AGENTS.md, README.md, ../CURRENT_STATE.md, ../ARCHITECTURE.md, CONTRIBUTING.md and the engineering change gate.
 - Boundaries: authenticated identity, personal settings API/UI, SQLite/PostgreSQL credential storage, provider construction, asynchronous training/inference/cleanup.
 - Contract: users configure their own public/private API keys and region/zone. No fallback to server credentials for authenticated users. Datasets and model artifacts remain shared. Cloud actions require resource ownership.
 - Storage: additive encrypted credential revisions and immutable resource-to-revision bindings. Credentials never enter task payloads, responses, logs or browser storage. Existing resources keep legacy server credentials only in background maintenance; new requests use personal credentials.

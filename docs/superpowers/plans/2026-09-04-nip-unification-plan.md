@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 14、React 18、TypeScript、FastAPI、SQLite/PostgreSQL、MinIO、LLaMA-Factory、vLLM、Diffusers、优云 Provider、Vitest/Node test、pytest。
 
-**Spec:** `docs/训推平台-工程规范与变更门禁.md`、`ARCHITECTURE.md`、`CURRENT_STATE.md`、仓库 `master` 分支实现和线上 NIP UI 行为。
+**Spec:** `docs/训推平台-工程规范与变更门禁.md`、`../../ARCHITECTURE.md`、`../../CURRENT_STATE.md`、仓库 `master` 分支实现和线上 NIP UI 行为。
 
 ## Global Constraints
 
@@ -226,8 +226,8 @@ queued
 
 ### 4.3 文档与验证文件
 
-- 更新 `ARCHITECTURE.md`：记录统一平台壳、适配层和资源租约。
-- 更新 `CURRENT_STATE.md`：记录阶段完成状态、兼容接口和未完成边界。
+- 更新 `../../ARCHITECTURE.md`：记录统一平台壳、适配层和资源租约。
+- 更新 `../../CURRENT_STATE.md`：记录阶段完成状态、兼容接口和未完成边界。
 - 新增 `docs/adr/2026-09-04-nip-unification.md`：记录采用渐进适配而非一次性重构的决策。
 - 新增 `lib/platform-shell.test.mjs`、`lib/platform-api.test.mjs`、`lib/platform-navigation.test.mjs`。
 
@@ -238,7 +238,7 @@ queued
 ### Task 0: 基线冻结与差异矩阵
 
 **Files:**
-- Read: `README.md`, `CURRENT_STATE.md`, `ARCHITECTURE.md`, `docs/训推平台-工程规范与变更门禁.md`
+- Read: `README.md`, `../../CURRENT_STATE.md`, `../../ARCHITECTURE.md`, `docs/训推平台-工程规范与变更门禁.md`
 - Create: `.scratch/nip-unification-baseline.md`
 - Test: existing backend and frontend suites
 
@@ -604,7 +604,7 @@ python -m pytest backend/test_resource_lifecycle.py backend/test_youyun_instance
 ### Task 10: 回归、兼容和发布门禁
 
 **Files:**
-- Modify: `README.md`, `ARCHITECTURE.md`, `CURRENT_STATE.md`
+- Modify: `README.md`, `../../ARCHITECTURE.md`, `../../CURRENT_STATE.md`
 - Create: `docs/adr/2026-09-04-nip-unification.md`
 - Test: all changed tests and production build
 

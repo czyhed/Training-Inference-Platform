@@ -33,7 +33,7 @@
 
 ### Task 3: 文档、全量验证与提交
 
-**Files:** `README.md`, `CURRENT_STATE.md`
+**Files:** `README.md`, `../../CURRENT_STATE.md`
 
 - [x] 记录快照 TTL、失效条件和真实实例验收边界。
 - [x] 运行后端/前端全量测试、compileall、TypeScript、build、diff check。

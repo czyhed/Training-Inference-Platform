@@ -140,7 +140,7 @@
 
 **Files:**
 - Modify: `app/globals.css`
-- Modify: `CURRENT_STATE.md`
+- Modify: `../../CURRENT_STATE.md`
 - Test: `lib/model-management-visual-regression.test.mjs`
 
 - [ ] **Step 1: Lock measured dimensions**

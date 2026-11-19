@@ -168,7 +168,7 @@
 
 - 远程正式分支：`master`，当前发布提交 `0ce2e9b feat: 优化微调加载与推理存储交互`。
 - 当前发布标签：`v3.0.16`；推送唯一新 Tag 触发 Drone 自动测试、构建和部署。
-- 团队开发采用个人功能分支，不直接在 `master` 上同时施工。分支创建、同步、提交、合并、测试和发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+- 团队开发采用个人功能分支，不直接在 `master` 上同时施工。分支创建、同步、提交、合并、测试和发布流程见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 - `v3.0.15` 已整合老师需求相关流程，包括系统概览、数据集人工修复、训练参数审计、优云训练实例保留与释放、动态推理上下文及优云推理预留。
 - `v3.0.16` 优化微调页面加载：列表初始只读取任务，模型、数据集、优云库存和价格按使用场景加载；仅存在进行中任务时轮询。
 - 任务名称和模型名称支持在输入为空时按 `Tab` 应用动态建议，模型名称附加本地日期 `YYYYMMDD`。
@@ -263,7 +263,7 @@ git push origin v2026.08.22-1
 - 未命中镜像时，后端通过 SFTP 上传已校验脚本并在远端执行 `sha256sum`，校验失败不会启动训练；实例创建后的所有失败继续进入既有 cleanup 路径。
 - `deploy/youyun/sdxl-lora/` 提供未来自定义优云镜像构建上下文；发布 `CompShareImageId` 和真实实例探针仍需运维人员执行。回滚时可将 `XUNTUI_SDXL_SCRIPT_ARTIFACT_ENABLED=0` 并保持镜像预置路径，MinIO 不可变制品不删除。
 
-下一阶段如需追溯阶段二部署过程，可阅读归档文档 [PHASE2_DEPLOYMENT_HANDOFF.md](docs/archive/PHASE2_DEPLOYMENT_HANDOFF.md)，按其中“部署前检查 → 服务器环境 → Docker/Drone → 真实 CPU 冒烟 → 生产验收”的历史记录参考；当前发布和验收规则以本文顶部基线、`CONTRIBUTING.md` 和真实 Git 状态为准。
+下一阶段如需追溯阶段二部署过程，可阅读归档文档 [PHASE2_DEPLOYMENT_HANDOFF.md](archive/PHASE2_DEPLOYMENT_HANDOFF.md)，按其中“部署前检查 → 服务器环境 → Docker/Drone → 真实 CPU 冒烟 → 生产验收”的历史记录参考；当前发布和验收规则以本文顶部基线、`CONTRIBUTING.md` 和真实 Git 状态为准。
 
 ## Executive summary
 
@@ -481,7 +481,7 @@ The managed inference form now includes a `权重量化` selector with `不量�
 
 Only explicit Best Adapter artifacts are deployable. The older completed tasks `ft-260815-222225-ede5`, `ft-260815-221217-434c`, `ft-260815-215401-88a5`, and `ft-260815-181749-2569` contain only legacy final/unspecified Adapter artifacts; `ft-260815-213634-5d90` is stopped and has no complete Adapter. Their saved configurations already use a 10% validation split. Completed legacy tasks must be cloned and rerun, while the stopped task may be retried; the current trainer will automatically save the lowest-eval-loss Adapter at `<artifact-root>/<task-id>/adapter` and the final Adapter at `<artifact-root>/<task-id>/final_adapter`. The training list now distinguishes “Best Adapter 可部署” from “仅 Final Adapter，不可部署”.
 
-The latest phase-two verification passes: the WSL backend suite runs 42 tests successfully, Python compilation passes, `npx tsc --noEmit` passes, `npm run build` completes successfully, and the command-level LLaMA-Factory smoke path passes. The smoke command is a test double, not real model training, and does not replace real CPU LLaMA-Factory acceptance. The code was pushed to Gitee in commit `ffa20f8`; the historical deployment gate is preserved in [PHASE2_DEPLOYMENT_HANDOFF.md](docs/archive/PHASE2_DEPLOYMENT_HANDOFF.md). Remaining inference work includes fully API-backed logs and runtime widgets, accurate KV Cache capacity reporting, asynchronous startup, a corrected API-use example, a repeatable automated browser/SSE acceptance test, and a future command-usage statistics view.
+The latest phase-two verification passes: the WSL backend suite runs 42 tests successfully, Python compilation passes, `npx tsc --noEmit` passes, `npm run build` completes successfully, and the command-level LLaMA-Factory smoke path passes. The smoke command is a test double, not real model training, and does not replace real CPU LLaMA-Factory acceptance. The code was pushed to Gitee in commit `ffa20f8`; the historical deployment gate is preserved in [PHASE2_DEPLOYMENT_HANDOFF.md](archive/PHASE2_DEPLOYMENT_HANDOFF.md). Remaining inference work includes fully API-backed logs and runtime widgets, accurate KV Cache capacity reporting, asynchronous startup, a corrected API-use example, a repeatable automated browser/SSE acceptance test, and a future command-usage statistics view.
 
 ## 2026-08-21 阶段二 CPU Linux 部署与真实验收（最新，覆盖此前“仅命令级 smoke”状态）
 
@@ -818,4 +818,4 @@ subprocess.CalledProcessError: ... died with <Signals.SIGILL: 4>
 
 ## XShipAI CPU speech workspace — 2026-11-01
 
-The XShipAI deployment at 23.144.68.140 includes an isolated VoxCPM2 CPU worker. Speech starts with a model list and opens details, generation, tasks, audio assets and API documentation. Four conditioning modes, streaming chunks and bounded batch jobs use the private worker; platform authentication remains the existing gateway/session boundary. For speech changes, consult [the CPU speech runbook](docs/voxcpm2-cpu.md), `backend/speech_contracts.py`, and `lib/speech-api.ts`. Other release notes in this file describe the historical platform deployment, not the XShipAI speech service.
+The XShipAI deployment at 23.144.68.140 includes an isolated VoxCPM2 CPU worker. Speech starts with a model list and opens details, generation, tasks, audio assets and API documentation. Four conditioning modes, streaming chunks and bounded batch jobs use the private worker; platform authentication remains the existing gateway/session boundary. For speech changes, consult [the CPU speech runbook](voxcpm2-cpu.md), `backend/speech_contracts.py`, and `lib/speech-api.ts`. Other release notes in this file describe the historical platform deployment, not the XShipAI speech service.

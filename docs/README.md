@@ -2,8 +2,8 @@
 
 ## 架构与设计
 
-- [架构说明](../ARCHITECTURE.md)
-- [设计说明](../DESIGN.md)
+- [架构说明](ARCHITECTURE.md)
+- [设计说明](DESIGN.md)
 - [工程规范与变更门禁](训推平台-工程规范与变更门禁.md)
 - [设计工作流](design-workflow.md)
 - [训练平台流程与参数](TRAINING_PLATFORM_FLOW_AND_PARAMETERS.md)
@@ -11,8 +11,8 @@
 
 ## 状态与基线
 
-- [当前状态](../CURRENT_STATE.md)
-- [项目基线](../PROJECT_BASELINE.md)
+- [当前状态](CURRENT_STATE.md)
+- [项目基线](PROJECT_BASELINE.md)
 - [问题与 BUG 审计报告](训推平台-问题与BUG审计报告.md)
 - [变更记录](changes/)
 
@@ -28,19 +28,17 @@
 
 ## 需求与调研
 
-- [LlamaFactory 远程训练需求](../REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md)
+- [LlamaFactory 远程训练需求](REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md)
 - [调研记录](research/)
 - [项目学习资料](project-learning/)
 - [归档文档](archive/)
 
 ## 根目录保留文件
 
-以下文件被 CI、Dockerfile、部署脚本或既有文档按根路径引用，继续保留在仓库根目录：
+以下文件被 CI、Dockerfile、部署脚本或既有流程按根路径引用，继续保留在仓库根目录：
 
-- `README.md`、`AGENTS.md`、`CONTRIBUTING.md`
-- `ARCHITECTURE.md`、`DESIGN.md`、`CURRENT_STATE.md`、`PROJECT_BASELINE.md`
-- `REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md`
+- `README.md`、`AGENTS.md`、`CONTRIBUTING.md`：仓库入口与协作约定。
 - `requirements-*.txt`：`deploy/docker/backend.Dockerfile` 与 `.drone.yml` 按根路径复制或安装。
 - `compose.production.yml`：`deploy/scripts/*` 与 `.drone.yml` 按根路径引用。
 
-> 这些文件不移动，避免破坏镜像构建、CI 与部署脚本。
+> 这些文件不移动，避免破坏镜像构建、CI 与部署脚本。架构、状态、设计、基线与需求类文档统一收在本目录。

@@ -289,7 +289,7 @@ git commit -m "feat: add image generation lora training workspace"
 **Files:**
 - Create: `backend/test_image_generation_e2e.py`
 - Modify: `README.md`
-- Modify: `CURRENT_STATE.md`
+- Modify: `../../CURRENT_STATE.md`
 
 - [ ] **Step 1: Write failing Fake acceptance test**
 
@@ -312,7 +312,7 @@ Expected: all backend/frontend tests pass; no GPU, Diffusers, SSH or Youyun proc
 - [ ] **Step 5: Commit docs and verification**
 
 ```bash
-git add backend/test_image_generation_e2e.py README.md CURRENT_STATE.md
+git add backend/test_image_generation_e2e.py README.md ../../CURRENT_STATE.md
 git commit -m "test: verify image generation finetune inference flow"
 ```
 
@@ -340,5 +340,5 @@ Run service preflight, confirm/start, create one task, download PNG, verify dime
 
 - [ ] **Step 5: Stop/delete all instances and record outcome**
 
-Confirm no active instances remain via the provider's read-only listing. Update `CURRENT_STATE.md` only with safe summary and known residual risks.
+Confirm no active instances remain via the provider's read-only listing. Update `../../CURRENT_STATE.md` only with safe summary and known residual risks.
 

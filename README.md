@@ -6,7 +6,7 @@ Internal model training and inference platform MVP. The current runnable scope i
 
 ## Current handoff baseline
 
-The latest published release in this repository is `v3.0.130` (2026-09-13), deployed by the tag-triggered Drone pipeline to the production host `110.42.51.234` (new server since 2026-09-13; the retired host was `185.61.210.32`). Since `v3.0.68`, the platform made LoRA+ and checkpoint settings effective in the generated LLaMA-Factory YAML, added server-side model-asset pagination, request-scoped inference generation controls (JSON or SSE), incremental inference-log polling plus complete-log download, ModelScope-to-Hugging-Face fallback for remote base-model downloads with observable diagnostics, PostgreSQL queue-read retry behavior, Asia/Shanghai audit timestamps, more reliable Youyun SSH transfer and remote-environment recovery, preflight GPU-runtime checks, archive-time remote-instance cleanup verification, structured training-submit errors, short-run train-Loss recovery, resilient inference/fine-tuning WebSocket log streaming with PostgreSQL datetime serialization and heartbeats, automatic retry for transient Youyun SSH channel timeouts, single-GPU deployment enforcement with a visible release version, the evaluation-datasets and model-evaluation workflow, and the new-server deployment pipeline (bundle-based source fetch, MinIO wheelhouse builds). Production currently runs without the Control Center login gate (`XUNTUI_AUTH_MODE=disabled`; Control Center stopped, data kept). The next unreleased production configuration keeps the unfinished evaluation workflow hidden with `XUNTUI_EVALUATION_ENABLED=false` until its datasets and acceptance flow are ready. See [CURRENT_STATE.md](CURRENT_STATE.md) for the full audited per-release status, [docs/DEPLOYMENT-NEW-SERVER.md](docs/DEPLOYMENT-NEW-SERVER.md) for the production runbook, and [CONTRIBUTING.md](CONTRIBUTING.md) before creating, merging, or releasing a branch.
+The latest published release in this repository is `v3.0.130` (2026-09-13), deployed by the tag-triggered Drone pipeline to the production host `110.42.51.234` (new server since 2026-09-13; the retired host was `185.61.210.32`). Since `v3.0.68`, the platform made LoRA+ and checkpoint settings effective in the generated LLaMA-Factory YAML, added server-side model-asset pagination, request-scoped inference generation controls (JSON or SSE), incremental inference-log polling plus complete-log download, ModelScope-to-Hugging-Face fallback for remote base-model downloads with observable diagnostics, PostgreSQL queue-read retry behavior, Asia/Shanghai audit timestamps, more reliable Youyun SSH transfer and remote-environment recovery, preflight GPU-runtime checks, archive-time remote-instance cleanup verification, structured training-submit errors, short-run train-Loss recovery, resilient inference/fine-tuning WebSocket log streaming with PostgreSQL datetime serialization and heartbeats, automatic retry for transient Youyun SSH channel timeouts, single-GPU deployment enforcement with a visible release version, the evaluation-datasets and model-evaluation workflow, and the new-server deployment pipeline (bundle-based source fetch, MinIO wheelhouse builds). Production currently runs without the Control Center login gate (`XUNTUI_AUTH_MODE=disabled`; Control Center stopped, data kept). The next unreleased production configuration keeps the unfinished evaluation workflow hidden with `XUNTUI_EVALUATION_ENABLED=false` until its datasets and acceptance flow are ready. See [docs/CURRENT_STATE.md](docs/CURRENT_STATE.md) for the full audited per-release status, [docs/DEPLOYMENT-NEW-SERVER.md](docs/DEPLOYMENT-NEW-SERVER.md) for the production runbook, and [CONTRIBUTING.md](CONTRIBUTING.md) before creating, merging, or releasing a branch.
 
 The current published release commit is `97b7b14` (`v3.0.130`) and matches `origin/master`.
 ## Current scope
@@ -72,7 +72,7 @@ A successful push starts CI; production changes occur only for a release tag. Ke
 
 ## Start locally
 
-Prerequisites: Windows with WSL2, the `Ubuntu-24.04` distribution, the `unsloth_env` training environment, and the `vllm_env` inference environment described in [CURRENT_STATE.md](CURRENT_STATE.md).
+Prerequisites: Windows with WSL2, the `Ubuntu-24.04` distribution, the `unsloth_env` training environment, and the `vllm_env` inference environment described in [docs/CURRENT_STATE.md](docs/CURRENT_STATE.md).
 
 ```powershell
 npm install
@@ -187,12 +187,12 @@ The phase-two code was pushed to Gitee in commit `ffa20f8` on branch `master`. T
 ## Documentation map
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): team branch workflow, testing, merge requests, release tags, shared-account precautions, and recommended Codex instructions.
-- [CURRENT_STATE.md](CURRENT_STATE.md): the primary context for a new feature chat; includes audited implementation status, the current end-to-end acceptance gate, priorities, runtime locations, bugs, and technical debt.
-- [ARCHITECTURE.md](ARCHITECTURE.md): current local architecture and target cloud migration shape.
-- [PROJECT_BASELINE.md](PROJECT_BASELINE.md): stable product scope, durable decisions, reasons, and rejected alternatives; it is intentionally not a changelog.
-- [docs/archive/](docs/archive/): historical handoff and workstream notes. Read these only when tracing an older decision, bug, or deployment event; current rules come from `CONTRIBUTING.md`, `CURRENT_STATE.md`, and the live Git state.
+- [docs/CURRENT_STATE.md](docs/CURRENT_STATE.md): the primary context for a new feature chat; includes audited implementation status, the current end-to-end acceptance gate, priorities, runtime locations, bugs, and technical debt.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): current local architecture and target cloud migration shape.
+- [docs/PROJECT_BASELINE.md](docs/PROJECT_BASELINE.md): stable product scope, durable decisions, reasons, and rejected alternatives; it is intentionally not a changelog.
+- [docs/archive/](docs/archive/): historical handoff and workstream notes. Read these only when tracing an older decision, bug, or deployment event; current rules come from `CONTRIBUTING.md`, `docs/CURRENT_STATE.md`, and the live Git state.
 
-`AGENTS.md` is intentionally absent. For a new feature chat, read `CONTRIBUTING.md`, `CURRENT_STATE.md`, and `PROJECT_BASELINE.md` first. Confirm requirements and acceptance criteria with the user before checking the runtime environment or editing code.
+`AGENTS.md` is intentionally absent. For a new feature chat, read `CONTRIBUTING.md`, `docs/CURRENT_STATE.md`, and `docs/PROJECT_BASELINE.md` first. Confirm requirements and acceptance criteria with the user before checking the runtime environment or editing code.
 
 ## Data, artifacts, and Git
 

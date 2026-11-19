@@ -109,7 +109,7 @@
 
 **Files:**
 - Modify: `README.md`
-- Modify: `CURRENT_STATE.md`
+- Modify: `../../CURRENT_STATE.md`
 - Extend: `backend/test_image_generation_api.py`
 - Extend: `lib/image-generation.test.mjs`
 

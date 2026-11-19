@@ -6,7 +6,7 @@
 
 ## 1. 老师要求与审计边界
 
-需求基线来自 `REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md`：
+需求基线来自 `../REQUIREMENTS_LLAMA_FACTORY_REMOTE_TRAINING.md`：
 
 - 平台参数必须由后端转换成 LLaMA-Factory YAML，不能执行浏览器传入的任意 Shell。
 - 本地 CPU 和优云 GPU 必须共享统一执行器输入、日志、指标、产物与清理协议。
@@ -139,7 +139,7 @@ Provider 运行时还使用服务端超时：实例启动默认 900 秒、删除
 2. CLI 默认 optimizer 仍是 `adamw_8bit`，与网页和 CPU 验收默认值冲突。现统一为 `adamw_torch` 并增加回归断言。
 3. 停止确认曾承诺一定保存最低 Loss Adapter，停止详情也固定写“已保存早停产物”。现改为只承诺请求停止，并以真实产物列表为准。
 4. 效果对比第一阶段曾写成同时加载基模与 Adapter，但实际第一请求只加载基模。现按两次真实 `/api/chat` 调用分别显示阶段。
-5. `ARCHITECTURE.md` 曾把 `train_sft.py` 的旧 Unsloth 行为描述成现行 worker 数据流。现明确实际 LLaMA-Factory 主链路。
+5. `../ARCHITECTURE.md` 曾把 `train_sft.py` 的旧 Unsloth 行为描述成现行 worker 数据流。现明确实际 LLaMA-Factory 主链路。
 
 仍需后续产品决策、未在本轮扩大修改的差距：
 

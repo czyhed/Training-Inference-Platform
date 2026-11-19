@@ -234,8 +234,8 @@ Expected: PASS without Docker daemon access.
 **Files:**
 - Modify: `.env.example`
 - Modify: `README.md`
-- Modify: `CURRENT_STATE.md`
-- Modify: `ARCHITECTURE.md`
+- Modify: `../../CURRENT_STATE.md`
+- Modify: `../../ARCHITECTURE.md`
 - Modify: `docs/youyun-community-image-runbook.md` if the existing runbook is the operator-facing image source.
 - Test: `backend/test_sdxl_script_artifact.py`
 

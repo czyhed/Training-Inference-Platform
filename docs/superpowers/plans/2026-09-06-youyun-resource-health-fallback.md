@@ -59,7 +59,7 @@
 ### Task 4: Documentation and verification
 
 **Files:**
-- Modify: `.env.example`, `README.md`, `CURRENT_STATE.md`, `ARCHITECTURE.md`
+- Modify: `.env.example`, `README.md`, `../../CURRENT_STATE.md`, `../../ARCHITECTURE.md`
 
 - [ ] Document cooldown defaults, auto fallback, explicit-selection behavior, and rollback flag.
 - [ ] Run `python -m pytest backend -q` with remote fallback disabled in the environment, `npm.cmd run test:frontend`, `npx.cmd tsc --noEmit`, `npm.cmd run build`, and local API health check.
