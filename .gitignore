@@ -56,3 +56,8 @@ deploy-data/
 
 # Codex 远程 vLLM 镜像构建临时上下文包
 cppt-vllm-build-context.tar.gz
+
+# Local agent workspaces and generated result caches
+.superpowers/
+.claude/
+.image-generation-results/

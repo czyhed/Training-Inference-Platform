@@ -1,5 +1,7 @@
 # Xuntui Platform
 
+文档索引：[docs/README.md](docs/README.md)。
+
 Internal model training and inference platform MVP. The current runnable scope is text-generation and visual-understanding SFT/DPO with LLaMA-Factory, using either LoRA (16-bit) or QLoRA (4-bit). Visual training requires a published `IMAGE_TEXT` dataset and a compatible probed Qwen-VL family model. The backend supports PostgreSQL as the preferred shared task and inference store, with SQLite retained as a local fallback; it is not yet the complete production cloud architecture.
 
 ## Current handoff baseline
