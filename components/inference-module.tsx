@@ -1876,7 +1876,6 @@ export function InferenceModule({
               description: form.description.trim(),
               taskId: selectedArtifact.taskId,
               adapterVariant: selectedArtifact.variant,
-              owner: "平台管理员",
               provider: form.provider,
               youyunResource:
                 form.provider === "youyun"

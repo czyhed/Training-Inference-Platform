@@ -5077,7 +5077,7 @@ button.inference-meta-chip:hover { border-color: #c7d2fe; background: #f8f9ff; }
 }
 
 /* Personal cloud account settings */
-.personal-settings { width: 100%; max-width: 920px; margin: 0 auto; }
+.personal-settings { width: 100%; }
 .personal-settings-panel { padding: 28px; display: grid; gap: 22px; }
 .personal-settings-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .personal-settings-heading h2 { margin: 0; font-size: 20px; }

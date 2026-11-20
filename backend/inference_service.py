@@ -27,6 +27,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from backend.personal_youyun import bind_resource, scoped_resource
+from backend import identity
 from backend.capabilities import require_provider
 from backend.store import TaskStore, resolve_adapter_artifact
 from backend.model_storage import adapter_is_complete
@@ -2719,6 +2720,9 @@ def create_inference_router(
                     "kvCacheMemoryGiB": None,
                     "kvCacheDtype": "auto",
                     "tensorParallelSize": 1,
+                    # Owner is always the server-side gateway identity; a
+                    # browser-supplied owner field is ignored.
+                    "owner": identity.current_identity_id(),
                 }
             )
             result = await runtime.create(payload)

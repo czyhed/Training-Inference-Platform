@@ -15,6 +15,7 @@ from fastapi import APIRouter, Header, HTTPException, Query, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from backend.identity import current_identity_id
 from backend.personal_youyun import check_resource_access
 from backend.image_generation_evaluation import list_image_generation_evaluation_datasets, validate_image_generation_evaluation_dataset
 from backend.providers.youyun.models import (
@@ -941,7 +942,7 @@ def create_image_generation_router(
         service_id = f"igs-{uuid.uuid4().hex[:12]}"
         if service_store is not None and hasattr(service_store, "create"):
             from backend.inference_service import InferenceCreate
-            base_payload = InferenceCreate(name=payload.name, taskId=payload.taskId or f"image-generation:{payload.modelId}", provider="youyun", owner="平台管理员", youyunResource=resource)
+            base_payload = InferenceCreate(name=payload.name, taskId=payload.taskId or f"image-generation:{payload.modelId}", provider="youyun", owner=current_identity_id(), youyunResource=resource)
             created = service_store.create(service_id=service_id, payload=base_payload, model=model["repoId"], adapter="", endpoint="")
             created_config = dict(created.get("config") or {})
             created_config.update(config)

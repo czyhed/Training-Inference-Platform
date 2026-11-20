@@ -20,9 +20,29 @@ logger = logging.getLogger(__name__)
 
 class SSHCommandError(RuntimeError):
     def __init__(self, command: str, exit_code: int, output: str) -> None:
-        super().__init__(f"远程命令失败（exit={exit_code}）：{command[:120]}")
+        detail = "；".join(
+            line.strip() for line in output.strip().splitlines()[-3:] if line.strip()
+        )
+        message = f"远程命令失败（exit={exit_code}）：{command[:120]}"
+        if detail:
+            message += f"；输出：{detail[:300]}"
+        super().__init__(message)
         self.command = command
         self.exit_code = exit_code
+        self.output = output
+
+
+class SSHChannelLostError(ConnectionError):
+    """远端通道在返回退出状态前关闭，命令结果未知。
+
+    paramiko 在通道关闭但没收到 `exit-status` 时让 `recv_exit_status()` 返回 -1；
+    这不是命令的退出码，而是连接/会话丢失。继承 ConnectionError，让
+    `_is_disconnect_error()` 统一按可重连错误处理。
+    """
+
+    def __init__(self, command: str, output: str) -> None:
+        super().__init__(f"远程命令未返回退出状态（SSH 通道中断）：{command[:80]}")
+        self.command = command
         self.output = output
 
 
@@ -238,6 +258,11 @@ class YouyunSSHClient:
                 output = (stdout.read() or b"") + (stderr.read() or b"")
                 text = output.decode("utf-8", errors="replace")
                 code = stdout.channel.recv_exit_status()
+                if check and code < 0:
+                    # paramiko reports -1 when the channel closed before an
+                    # exit-status arrived. The command may or may not have run,
+                    # so this is a lost connection, never a command result.
+                    raise SSHChannelLostError(command, text[-2000:])
                 if check and code != 0:
                     raise SSHCommandError(command, code, text[-2000:])
                 return code, text

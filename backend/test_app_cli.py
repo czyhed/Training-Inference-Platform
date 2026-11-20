@@ -140,6 +140,40 @@ class YouyunWatchdogTest(unittest.TestCase):
         )
 
 
+class YouyunResourceSnapshotTest(unittest.TestCase):
+    SNAPSHOT = {
+        "mode": "manual",
+        "region": "cn-wlcb",
+        "zone": "cn-wlcb-01",
+        "gpuType": "4090",
+        "gpuCount": 1,
+        "cpuCores": 16,
+        "memoryGb": 94,
+        "imageId": "compshareImage-1bvy5l0kjip2",
+        "imageName": "LLaMA-Factory 社区训练镜像",
+        "instanceMode": "pod",
+        "chargeType": "Postpay",
+        "publicModelPath": "/model/Sinapisai/qwen/qwen3.5-4b",
+        # Resolved display fields that the persisted snapshot also carries.
+        "price": {"total": 2.24, "currency": "CNY"},
+        "fallback": False,
+        "container": True,
+        "imageType": "Community",
+        "gpuMemoryGb": 24,
+        "locationZone": "cn-wlcb-01",
+    }
+
+    def test_strict_contract_rejects_resolved_snapshot(self) -> None:
+        with self.assertRaises(ValueError):
+            app_module.YouyunResourceSelection.model_validate(self.SNAPSHOT)
+
+    def test_persisted_snapshot_is_revalidated_for_retry_and_clone(self) -> None:
+        selection = app_module._youyun_resource_selection(self.SNAPSHOT)
+        self.assertEqual(selection.zone, "cn-wlcb-01")
+        self.assertEqual(selection.instanceMode, "pod")
+        self.assertEqual(selection.publicModelPath, "/model/Sinapisai/qwen/qwen3.5-4b")
+
+
 class YouyunCommunityImagesRouteTest(unittest.IsolatedAsyncioTestCase):
     async def test_community_route_returns_real_ids_and_verification_state(self) -> None:
         class FakeClient:

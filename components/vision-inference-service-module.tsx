@@ -686,7 +686,6 @@ export function VisionInferenceServiceModule({
            modelId: selectedModel.modelId,
            taskId: selectedModel.taskId ?? null,
            adapterVariant: selectedModel.adapterVariant ?? null,
-          owner: "平台管理员",
           provider: createForm.provider,
           youyunResource: createForm.provider === "youyun" && youyunResource
               ? {

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-from contextvars import ContextVar
 import hashlib
 import hmac
 import inspect
@@ -31,7 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field
 
-from backend import personal_youyun
+from backend import identity, personal_youyun
 from backend.personal_youyun import scoped_resource
 from backend.vision import (
     MAX_VISION_ARCHIVE_BYTES,
@@ -970,7 +969,7 @@ inference_runtime = InferenceRuntime(
     port=int(os.environ.get("XUNTUI_INFERENCE_PORT", "8011")),
     training_busy=lambda: active_task_id is not None or vision_training_runtime.active_task_id is not None or image_generation_runtime.active_task_id is not None,
     youyun_resource_resolver=lambda resource: resolve_youyun_resource(
-        YouyunResourceSelection.model_validate(resource)
+        _youyun_resource_selection(resource)
     ),
     artifact_restorer=lambda task_id, variant: require_model_uploader().restore_adapter(
         task_id, variant, ARTIFACT_ROOT / "minio-cache"
@@ -1532,12 +1531,14 @@ class YouyunCommunityImageProbeRequest(BaseModel):
     resource: YouyunResourceSelection
 
 def _youyun_resource_selection(resource: Mapping[str, Any]) -> YouyunResourceSelection:
-    """Accept canonical resource snapshots that also carry the resolved region."""
-    values = {
-        key: resource[key]
-        for key in ("mode", "gpuType", "gpuCount", "cpuCores", "memoryGb", "region", "zone", "imageId", "instanceMode", "chargeType", "fallbackEligible")
-        if key in resource
-    }
+    """Re-validate a persisted resource snapshot.
+
+    Stored snapshots also carry resolved display fields (price, GPU memory,
+    locationZone, ...). Only the selection contract takes part in validation,
+    so retry/clone/inference can reuse a saved snapshot without rejecting it.
+    """
+    field_names = set(YouyunResourceSelection.model_fields)
+    values = {key: value for key, value in dict(resource).items() if key in field_names}
     return YouyunResourceSelection.model_validate(values)
 
 model_storage_config = ModelStorageConfig.from_env(PROJECT_ROOT / ".env")
@@ -3147,7 +3148,7 @@ def import_dataset_from_minio(source_key: str, name: str, structure: str) -> dic
                 "validationMessage": validation_error or "格式校验通过，可以发布。",
                 "validationReport": report,
                 "warningCount": 0,
-                "owner": "平台管理员",
+                "owner": identity.current_identity_id(),
                 "builtin": False,
             }
         )
@@ -3312,9 +3313,9 @@ PUBLIC_API_PATHS = {
     "/api/auth/me",
     "/api/auth/logout",
 }
-request_user_context: ContextVar[dict[str, Any] | None] = ContextVar(
-    "request_user_context", default=None
-)
+# Shared with route modules: the middleware stores the decoded gateway identity
+# here so owner/audit writes do not need to read headers again.
+request_user_context = identity.request_identity
 
 
 def authenticated_user_or_default() -> dict[str, Any]:
@@ -3342,20 +3343,16 @@ def record_audit(action: str, object_type: str, object_id: str, *, result: str =
 
 
 def gateway_user_from_request(request: Request) -> dict[str, Any] | None:
-    """Read the identity injected by the Control Center application gateway."""
-    # 网关转发的中文名可能带 URL 编码（如 %E5%88%98…），统一解码后再入库。
-    user_id = urllib.parse.unquote(request.headers.get("x-control-user-id", "")).strip()
-    username = urllib.parse.unquote(request.headers.get("x-control-username", "")).strip()
-    if not user_id and not username:
-        return None
-    roles = request.headers.get("x-control-roles", "").strip()
-    return {
-        "id": user_id or username,
-        "uid": user_id or username,
-        "sub": user_id or username,
-        "name": username or user_id,
-        "roles": [role for role in roles.split(",") if role],
-    }
+    """Read the identity injected by the Control Center application gateway.
+
+    The gateway sends the workbench identity URL encoded (``password%3Axshipai``);
+    ``identity.identity_from_headers`` decodes it before it reaches owners,
+    audit rows, or resource leases.  The browser's own ``X-User-Id`` header is
+    intentionally ignored here: production relies on the gateway stripping
+    client-supplied identity headers.  The local development fallback lives in
+    the middleware below.
+    """
+    return identity.identity_from_headers(request.headers)
 
 
 def frontend_redirect(request: Request, query: str = "") -> str:
@@ -5019,7 +5016,9 @@ async def upload_completed_task_artifacts(task_id: str, variant_filter: str | No
                 source_platform="训练任务",
                 source_uri=str(path),
                 source_task_id=task_id,
-                uploaded_by=str(payload.get("owner") or os.environ.get("MODEL_UPLOAD_USER", "local-admin")),
+                uploaded_by=identity.current_identity_id(
+                    os.environ.get("MODEL_UPLOAD_USER", "local-admin")
+                ),
                 extra_metadata={
                     "checkpointStep": artifact.get("checkpointStep"),
                     "evalLoss": artifact.get("evalLoss"),
@@ -5407,7 +5406,9 @@ async def upload_model_asset(asset_id: str, variant: Literal["best", "final"] | 
                 else "手工登记"
             ),
             source_uri=asset["path"],
-            uploaded_by=os.environ.get("MODEL_UPLOAD_USER", "local-admin"),
+            uploaded_by=identity.current_identity_id(
+                os.environ.get("MODEL_UPLOAD_USER", "local-admin")
+            ),
         )
         return {"assetId": asset_id, "sharedStorage": shared_storage_payload(result)}
     except (FileNotFoundError, ValueError) as exc:
@@ -5659,7 +5660,7 @@ async def _upload_dataset_image_text(
                 "sourceType": "local", "sourceUri": dataset_dir.resolve().as_uri(),
                 "sizeBytes": len(all_bytes), "contentSha256": hashlib.sha256(all_bytes).hexdigest(),
                 "validationMessage": "图片校验通过，可以发布。", "validationReport": report,
-                "warningCount": 0, "owner": "平台管理员", "builtin": False,
+                "warningCount": 0, "owner": identity.current_identity_id(), "builtin": False,
             })
         with source_path.open("wb") as target:
             async for chunk in request.stream():
@@ -5707,7 +5708,7 @@ async def _upload_dataset_image_text(
                 "validationMessage": validation_message,
                 "validationReport": report,
                 "warningCount": len(warnings),
-                "owner": "平台管理员",
+                "owner": identity.current_identity_id(),
                 "builtin": False,
             }
         )
@@ -5789,7 +5790,9 @@ async def _upload_dataset_text(
             "sourceType": "local", "sourceUri": source_path.resolve().as_uri(),
             "sizeBytes": source_path.stat().st_size, "contentSha256": digest.hexdigest(),
             "validationMessage": validation_message, "validationReport": report,
-            "warningCount": len(report.get("warnings", [])), "owner": authenticated_user_or_default().get("name", "平台管理员"), "builtin": False,
+            "warningCount": len(report.get("warnings", [])),
+            "owner": identity.current_identity_id(),
+            "builtin": False,
         })
         record_audit("create" if not existing else "append", "dataset", dataset_id, details={"name": clean_name, "structure": structure, "purpose": purpose, "filename": safe_filename})
         return result
@@ -6135,7 +6138,7 @@ async def clone_dataset(dataset_id: str) -> dict[str, Any]:
                 "sourceUri": clone_dir.resolve().as_uri(),
                 "sizeBytes": sum(path.stat().st_size for path in clone_dir.rglob("*") if path.is_file()),
                 "contentSha256": await asyncio.to_thread(_directory_sha256, clone_dir),
-                "owner": "平台管理员",
+                "owner": identity.current_identity_id(),
                 "builtin": False,
             }
         )
@@ -6164,7 +6167,7 @@ async def clone_dataset(dataset_id: str) -> dict[str, Any]:
             "sourceUri": clone_path.resolve().as_uri(),
             "sizeBytes": clone_path.stat().st_size,
             "contentSha256": file_sha256(clone_path),
-            "owner": "平台管理员",
+            "owner": identity.current_identity_id(),
             "builtin": False,
         }
     )
@@ -6173,7 +6176,9 @@ async def clone_dataset(dataset_id: str) -> dict[str, Any]:
 @app.delete("/api/datasets/{dataset_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_dataset(dataset_id: str) -> Response:
     try:
-        dataset = store.delete_dataset(dataset_id)
+        dataset = store.delete_dataset(
+            dataset_id, deleted_by=identity.current_identity_id("local-admin")
+        )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     if dataset is None:
@@ -6658,9 +6663,8 @@ async def list_tasks(
 @app.post("/api/tasks", status_code=status.HTTP_201_CREATED)
 async def create_task(payload: TaskCreate) -> dict[str, Any]:
     require_provider(payload.provider)
-    user = authenticated_user_or_default()
     values = payload.model_dump()
-    values["owner"] = user.get("name") or user.get("sub") or values.get("owner")
+    values["owner"] = identity.current_identity_id()
     if payload.framework != "llamafactory":
         raise HTTPException(status_code=422, detail="当前阶段只支持 LLaMA-Factory。")
     if payload.provider not in {"local", "youyun"}:
@@ -6699,7 +6703,6 @@ async def create_task(payload: TaskCreate) -> dict[str, Any]:
 @app.post("/api/tasks/cli", status_code=status.HTTP_201_CREATED)
 async def create_cli_task(payload: CliTaskCreate) -> dict[str, Any]:
     require_local_runtime()
-    user = authenticated_user_or_default()
     try:
         values = parse_cli_command(payload.command)
     except CliValidationError as exc:
@@ -6722,7 +6725,7 @@ async def create_cli_task(payload: CliTaskCreate) -> dict[str, Any]:
         )
     values["datasetName"] = dataset["name"]
     values["datasetVersion"] = str(dataset.get("version") or 1)
-    values["owner"] = user.get("name") or user.get("sub") or values.get("owner")
+    values["owner"] = identity.current_identity_id()
     try:
         validated = TaskCreate.model_validate(values)
     except Exception as exc:
@@ -6956,7 +6959,9 @@ async def retry_task(task_id: str) -> dict[str, Any]:
     require_provider(current.get("provider"))
     if current.get("provider") == "youyun":
         resource = current.get("youyunResource") or {}
-        await resolve_youyun_resource(YouyunResourceSelection.model_validate(resource))
+        # The saved snapshot carries resolved price/location fields; only the
+        # selection contract is re-validated here.
+        await resolve_youyun_resource(_youyun_resource_selection(resource))
     try:
         task = store.retry(task_id)
     except ValueError as exc:
@@ -6976,11 +6981,8 @@ async def clone_task(task_id: str) -> dict[str, Any]:
     if source.get("provider") == "youyun":
         # 与创建任务一致：点击克隆时同步校验库存，无库存立即失败并提示更换。
         resource = dict(source.get("youyunResource") or {})
-        field_names = set(YouyunResourceSelection.model_fields)
         try:
-            selection = YouyunResourceSelection.model_validate(
-                {key: value for key, value in resource.items() if key in field_names}
-            )
+            selection = _youyun_resource_selection(resource)
         except Exception as exc:
             raise HTTPException(
                 status_code=422,
@@ -6996,7 +6998,9 @@ async def clone_task(task_id: str) -> dict[str, Any]:
 @app.delete("/api/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(task_id: str) -> Response:
     try:
-        deleted = store.delete(task_id)
+        deleted = store.delete(
+            task_id, deleted_by=identity.current_identity_id("local-admin")
+        )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     if not deleted:

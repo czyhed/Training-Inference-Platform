@@ -981,7 +981,6 @@ export function TrainingModule({
       modelSource: selectedPublicModelPath ? "public" : "modelscope",
       datasetId: selectedDataset?.id ?? "",
       datasetName: selectedDataset?.name ?? "",
-      owner: "平台管理员",
       mergeModel,
       validationSplit,
       earlyStopping,

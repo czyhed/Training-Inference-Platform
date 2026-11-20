@@ -52,7 +52,7 @@ export function SystemSettings() {
     finally { if (!next.signal.aborted) setBusy(null); }
   }
 
-  return <section className="personal-settings">
+  return <section className="content personal-settings">
     <div className="title-row"><div><h1>系统配置</h1><p className="subtitle">管理当前登录账号的优云智算连接</p></div></div>
     <form className="panel personal-settings-panel" onSubmit={save}>
       <div className="personal-settings-heading"><h2>我的优云智算</h2><span className={settings?.configured ? "personal-settings-ready" : "personal-settings-pending"}>{busy === "load" ? "正在读取…" : settings?.configured ? "已配置" : "待配置"}</span></div>

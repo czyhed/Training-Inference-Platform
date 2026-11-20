@@ -648,14 +648,14 @@ class TaskStore:
             )
         return self.get_dataset(dataset_id)
 
-    def delete_dataset(self, dataset_id: str) -> dict[str, Any] | None:
+    def delete_dataset(self, dataset_id: str, *, deleted_by: str = "local-admin") -> dict[str, Any] | None:
         dataset = self.get_dataset(dataset_id)
         if dataset is None:
             return None
         if dataset["builtin"]:
             raise ValueError("内置验证数据集不能删除。")
         with self._lock, self._connect() as connection:
-            connection.execute("UPDATE datasets SET deleted_at = ?, deleted_by = ?, deletion_reason = ? WHERE id = ?", (self._now_iso(), "local-admin", "user_request", dataset_id))
+            connection.execute("UPDATE datasets SET deleted_at = ?, deleted_by = ?, deletion_reason = ? WHERE id = ?", (self._now_iso(), deleted_by or "local-admin", "user_request", dataset_id))
         return dataset
 
     def _serialize_dataset(self, row: sqlite3.Row) -> dict[str, Any]:
@@ -1473,7 +1473,7 @@ class TaskStore:
         payload["name"] = next_task_clone_name(payload["name"], existing_names)
         return self.create(payload)
 
-    def delete(self, task_id: str) -> bool:
+    def delete(self, task_id: str, *, deleted_by: str = "local-admin") -> bool:
         task = self.get(task_id)
         if task is None:
             return False
@@ -1482,7 +1482,7 @@ class TaskStore:
         if has_unreleased_youyun_instance(task.get("artifacts") or []):
             raise ValueError("优云实例尚未释放，请先结束任务并释放资源或销毁实例。")
         with self._lock, self._connect() as connection:
-            connection.execute("UPDATE tasks SET deleted_at = ?, deleted_by = ?, deletion_reason = ? WHERE id = ?", (self._now_iso(), "local-admin", "user_request", task_id))
+            connection.execute("UPDATE tasks SET deleted_at = ?, deleted_by = ?, deletion_reason = ? WHERE id = ?", (self._now_iso(), deleted_by or "local-admin", "user_request", task_id))
         return True
 
     def _serialize(

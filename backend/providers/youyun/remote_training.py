@@ -38,7 +38,7 @@ from backend.store import (
 
 from .instance_manager import YouyunInstanceManager, YouyunProvisionCancelled
 from .models import YouyunInstance
-from .ssh import YouyunSSHClient
+from .ssh import SSHChannelLostError, YouyunSSHClient
 from .resource_health import find_uhost_fallback
 
 logger = logging.getLogger(__name__)
@@ -1089,6 +1089,37 @@ class YouyunTrainingRunner:
             "echo ---; tail -n 20 /tmp/env-install.log 2>/dev/null"
         )
 
+    async def _launch_installer(
+        self, task_id: str, ssh: YouyunSSHClient, command: str
+    ) -> bool:
+        """Start the detached installer; the marker probe stays authoritative.
+
+        The launcher is idempotent (every generation owns its marker namespace),
+        so an unconfirmed reply — a dropped SSH channel, for example — must not
+        fail an attempt whose installer may already be running. The probe loop
+        relaunches only when no marker exists at all.
+        """
+        try:
+            await asyncio.to_thread(self._run_installer_launch, ssh, command)
+            return True
+        except Exception as exc:  # noqa: BLE001 - the probe loop owns the decision
+            self.sink.append_log(
+                task_id,
+                f"环境安装启动命令未确认（{type(exc).__name__}：{exc}），"
+                "以安装标记探测结果为准。",
+            )
+            return False
+
+    @staticmethod
+    def _run_installer_launch(ssh: YouyunSSHClient, command: str) -> None:
+        try:
+            ssh.run(command, 30, True, retry_on_disconnect=True)
+        except TypeError as exc:
+            # Test doubles and older clients may not expose the keyword.
+            if "retry_on_disconnect" not in str(exc):
+                raise
+            ssh.run(command, 30, True)
+
     async def _install_environment(self, task_id: str, ssh: YouyunSSHClient) -> None:
         self.sink.update(task_id, current_step="正在安装 LLaMA-Factory 训练环境（首次约 3-10 分钟）")
         if self.sink.is_cancel_requested(task_id):
@@ -1154,7 +1185,7 @@ class YouyunTrainingRunner:
         # Always initialize a fresh namespace for a new invocation.  A stale
         # legacy marker from a previous SSH session must not suppress launch.
         launch = self._install_launch_command(generation, force=True)
-        await asyncio.to_thread(ssh.run, launch, 30)
+        await self._launch_installer(task_id, ssh, launch)
         deadline = self._clock() + self.install_timeout
         # The launch shell may need a few seconds before its PID and log file
         # become visible over SSH. Do not classify that visibility window as a
@@ -1222,10 +1253,10 @@ class YouyunTrainingRunner:
                     # process therefore cannot publish into the new namespace.
                     await self._stop_remote_install(ssh)
                     generation = uuid.uuid4().hex
-                    await asyncio.to_thread(
-                        ssh.run,
+                    await self._launch_installer(
+                        task_id,
+                        ssh,
                         self._install_launch_command(generation, force=True),
-                        30,
                     )
                     launch_grace_deadline = self._clock() + max(10.0, self.poll_interval * 2)
                 else:
@@ -1235,10 +1266,10 @@ class YouyunTrainingRunner:
                         f"{diagnostics or '无安装日志；请检查 env-install.launch 与 Bash/启动器探测结果'}"
                     )
             if not head.strip() and not tail:
-                await asyncio.to_thread(
-                    ssh.run,
+                await self._launch_installer(
+                    task_id,
+                    ssh,
                     self._install_launch_command(generation),
-                    30,
                 )
             self._sleep(self.poll_interval)
         raise RuntimeError("远程依赖安装超时。")
@@ -1498,7 +1529,7 @@ class YouyunTrainingRunner:
         for attempt in range(attempts):
             try:
                 try:
-                    return ssh.run(
+                    code, output = ssh.run(
                         command,
                         timeout,
                         check,
@@ -1508,7 +1539,12 @@ class YouyunTrainingRunner:
                     # Test doubles and older clients may not expose the keyword.
                     if "retry_on_disconnect" not in str(exc):
                         raise
-                    return ssh.run(command, timeout, check)
+                    code, output = ssh.run(command, timeout, check)
+                if code < 0:
+                    # check=False still reports a channel loss as -1; a query
+                    # with no exit status has no trustworthy result.
+                    raise SSHChannelLostError(command, output[-2000:])
+                return code, output
             except Exception as exc:  # noqa: BLE001 - transient SSH loss is retryable
                 if attempt >= attempts - 1 or not YouyunSSHClient._is_disconnect_error(exc):
                     raise

@@ -5,7 +5,11 @@ import unittest
 from paramiko.ssh_exception import AuthenticationException, NoValidConnectionsError
 from unittest.mock import MagicMock, patch
 
-from backend.providers.youyun.ssh import YouyunSSHClient
+from backend.providers.youyun.ssh import (
+    SSHChannelLostError,
+    YouyunSSHClient,
+)
+
 
 
 class _Channel:
@@ -53,7 +57,64 @@ class _Transport:
         return self.client
 
 
+class _LostStatusChannel:
+    def recv_exit_status(self) -> int:
+        # paramiko returns -1 when the channel closes without an exit-status.
+        return -1
+
+
+class _LostStatusStream(_Stream):
+    channel = _LostStatusChannel()
+
+
+class _LostReplyClient:
+    def __init__(self, always_lost: bool = False) -> None:
+        self.always_lost = always_lost
+        self.calls = 0
+
+    def exec_command(self, _command: str, timeout: float):
+        self.calls += 1
+        if self.always_lost or self.calls == 1:
+            return _Stdin(), _LostStatusStream(b""), _Stream(b"")
+        return _Stdin(), _Stream(b"ok"), _Stream(b"")
+
+    def close(self) -> None:
+        return None
+
+
+class _LostReplyTransport:
+    def __init__(self, always_lost: bool = False) -> None:
+        self.client = _LostReplyClient(always_lost=always_lost)
+
+    def connect(self, **_kwargs):
+        return self.client
+
+
 class YouyunSSHTests(unittest.TestCase):
+    def test_missing_exit_status_is_a_channel_loss_not_a_command_failure(self) -> None:
+        transport = _LostReplyTransport(always_lost=True)
+        client = YouyunSSHClient(transport=transport, retry_backoff=0)
+        client.connect("host", 22, "root", "secret")
+
+        with self.assertRaises(SSHChannelLostError) as caught:
+            client.run("installer-launch", 30, True)
+
+        self.assertIn("未返回退出状态", str(caught.exception))
+        self.assertTrue(YouyunSSHClient._is_disconnect_error(caught.exception))
+        # A non-idempotent launch must not be replayed without an opt-in.
+        self.assertEqual(transport.client.calls, 1)
+
+    def test_lost_reply_replays_idempotent_command_once(self) -> None:
+        transport = _LostReplyTransport()
+        client = YouyunSSHClient(transport=transport, command_retries=1, retry_backoff=0)
+        client.connect("host", 22, "root", "secret")
+
+        with patch("backend.providers.youyun.ssh.time.sleep"):
+            code, output = client.run("test -f /tmp/ready", 30, True, retry_on_disconnect=True)
+
+        self.assertEqual((code, output), (0, "ok"))
+        self.assertEqual(transport.client.calls, 2)
+
     def test_run_reconnects_after_eof_and_replays_idempotent_command(self) -> None:
         transport = _Transport()
         client = YouyunSSHClient(transport=transport, command_retries=1, retry_backoff=0)

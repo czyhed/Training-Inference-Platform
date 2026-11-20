@@ -14,6 +14,7 @@ from fastapi import APIRouter, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from backend.personal_youyun import check_resource_access
+from backend import identity
 from backend.vision import (
     answer_metrics,
     can_use_vision_model_for_training,
@@ -956,6 +957,8 @@ def create_vision_router(
         store_values = payload.model_dump(
             exclude={"provider", "youyunResource", "modelType", "taskId", "adapterVariant"}
         )
+        # Owner comes from the gateway identity, never from the request body.
+        store_values["owner"] = identity.current_identity_id()
 
         store_payload = _VisionInferenceStorePayload(
             **store_values,
@@ -1182,7 +1185,7 @@ def create_vision_router(
             "provider": payload.provider,
             "youyunResource": preflight.get("youyunResource"),
             "outputName": payload.outputName,
-            "owner": "平台管理员",
+            "owner": identity.current_identity_id(),
             "createdAt": now,
             "updatedAt": now,
             "previewId": preview["previewId"],

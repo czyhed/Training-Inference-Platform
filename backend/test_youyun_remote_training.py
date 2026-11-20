@@ -1309,6 +1309,30 @@ class StopPathTest(RunnerTestBase):
         self.assertIn("远程依赖安装进程已退出但未生成完成标记", "\n".join(sink.logs))
         self.assertEqual(self.manager.cleaned, ["uhost-9"])
 
+    def test_lost_launch_reply_does_not_fail_install(self) -> None:
+        from backend.providers.youyun.ssh import SSHChannelLostError
+
+        class LostLaunchSSH(FakeSSH):
+            def __init__(self) -> None:
+                super().__init__()
+                self.launch_attempts = 0
+
+            def run(self, command, timeout=120, check=True, **kwargs):
+                if "ROOT=/tmp/env-install.$GEN" in command:
+                    self.launch_attempts += 1
+                    raise SSHChannelLostError(command, "")
+                return super().run(command, timeout, check)
+
+        self.ssh = LostLaunchSSH()
+        sink = FakeSink()
+        runner = self.make_runner(sink, install_timeout=30, poll_interval=0)
+        asyncio.run(runner._install_environment("lost-launch", self.ssh))
+
+        # The marker probe decides the outcome, so an unconfirmed reply must not
+        # abort an attempt whose installer may still be starting.
+        self.assertEqual(self.ssh.launch_attempts, 1)
+        self.assertTrue(any("启动命令未确认" in log for log in sink.logs))
+
     def test_install_restarts_once_after_process_dies_before_success(self) -> None:
         class RestartSuccessSSH(FakeSSH):
             def __init__(self) -> None:
